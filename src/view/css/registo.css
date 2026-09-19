@@ -71,8 +71,12 @@ header {
     align-items: center;
 }
 
-.descricao h2 {
+.nomeperfil {
     margin: 0 1em;
+}
+
+.nomeperfil p {
+    text-align: right;
 }
 
 .descricao img {
