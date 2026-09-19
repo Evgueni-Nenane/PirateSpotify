@@ -2,8 +2,8 @@
     class Connection {
 
         private static $hostname = "localhost";
-        private static $username = "dev_user";
-        private static $password = "System.out.print";
+        private static $username = "root";
+        private static $password = "";
         private static $database = "discocompacto";
 
         public static function connectionDB() {
