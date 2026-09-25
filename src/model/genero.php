@@ -6,7 +6,7 @@
 
    
     
-    public function __construct($codigoGenero, $nomeGenero) {
+    public function __construct($codigoGenero = null, $nomeGenero = null) {
         $this->codigoGenero = $codigoGenero;
         $this->nomeGenero = $nomeGenero;
     }

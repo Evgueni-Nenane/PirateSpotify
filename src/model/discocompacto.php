@@ -6,18 +6,18 @@ class DiscoCompacto {
 	private $preco;
 	private $anoEdicao;
 	private $generoMusicalTxt;
-	private  $generoMusical;
-	private  $cantores;
-	private  $musicos;
-	private  $compositores;
-	private  $produtores;
-	private  $gravadoras;
-	private  $editoras;
+	private $generoMusical;
+	private $cantores;
+	private $musicos;
+	private $compositores;
+	private $produtores;
+	private $gravadoras;
+	private $editoras;
 	private $edicao;
-	private  $faixas;
+	private $faixas;
 
 
-	public function __construct($codigoDisco, $titulo, $preco, $anoEdicao, $generoMusical, $cantores, $musicos, $compositores, $produtores, $gravadoras, $editoras, $edicao, $faixas)
+	public function __construct($codigoDisco = null, $titulo = null, $preco = null, $anoEdicao = null, $generoMusical = null, $cantores = null, $musicos = null, $compositores = null, $produtores = null, $gravadoras = null, $editoras = null, $edicao = null, $faixas = null)
 	{
 		$this->codigoDisco = $codigoDisco;
 		$this->titulo = $titulo;
@@ -90,7 +90,7 @@ class DiscoCompacto {
 		return $this->generoMusical;
 	}
 
-	public function setGeneroMusical(array $generoMusical)
+	public function setGeneroMusical(?array $generoMusical)
 	{
 		return $this->generoMusical = $generoMusical;
 	}
@@ -100,7 +100,7 @@ class DiscoCompacto {
 		return $this->cantores;
 	}
 
-	public function setCantores(array $cantores)
+	public function setCantores(?array $cantores)
 	{
 		return $this->cantores = $cantores;
 	}
@@ -110,7 +110,7 @@ class DiscoCompacto {
 		return $this->musicos;
 	}
 
-	public function setMusicos(array $musicos)
+	public function setMusicos(?array $musicos)
 	{
 		return $this->musicos = $musicos;
 	}
@@ -120,7 +120,7 @@ class DiscoCompacto {
 		return $this->compositores;
 	}
 
-	public function setCompositores(array $compositores)
+	public function setCompositores(?array $compositores)
 	{
 		return $this->compositores = $compositores;
 	}
@@ -130,7 +130,7 @@ class DiscoCompacto {
 		return $this->produtores;
 	}
 
-	public function setProdutores(array $produtores)
+	public function setProdutores(?array $produtores)
 	{
 		return $this->produtores = $produtores;
 	}
@@ -140,7 +140,7 @@ class DiscoCompacto {
 		return $this->gravadoras;
 	}
 
-	public function setGravadoras(array $gravadoras)
+	public function setGravadoras(?array $gravadoras)
 	{
 		return $this->gravadoras = $gravadoras;
 	}
@@ -150,7 +150,7 @@ class DiscoCompacto {
 		return $this->editoras;
 	}
 
-	public function setEditoras(array $editoras)
+	public function setEditoras(?array $editoras)
 	{
 		return $this->editoras = $editoras;
 	}
@@ -160,7 +160,7 @@ class DiscoCompacto {
 		return $this->edicao;
 	}
 
-	public function setEdicao(Edicao $edicao)
+	public function setEdicao(?Edicao $edicao)
 	{
 		return $this->edicao = $edicao;
 	}
@@ -170,7 +170,7 @@ class DiscoCompacto {
 		return $this->faixas;
 	}
 
-	public function setFaixas(array $faixas)
+	public function setFaixas(?array $faixas)
 	{
 		return $this->faixas = $faixas;
 	}

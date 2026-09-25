@@ -28,4 +28,4 @@ class Sessao {
         self::iniciar();
         return isset($_SESSION['utilizadorLogado']);
     }
-}  
+}

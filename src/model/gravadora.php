@@ -9,7 +9,7 @@
     private $enderecoGravadora;
     private $emailGravadora;
 
-   public function __construct($codigoGravadora, $nomeGravadora, $contactoGravadora, $enderecoGravadora, $emailGravadora) {
+   public function __construct($codigoGravadora = null, $nomeGravadora = null, $contactoGravadora = null, $enderecoGravadora = null, $emailGravadora = null) {
         $this->codigoGravadora = $codigoGravadora;
         $this->nomeGravadora = $nomeGravadora;
         $this->contactoGravadora = $contactoGravadora;

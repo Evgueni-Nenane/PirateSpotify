@@ -8,7 +8,7 @@
     private $contactoProdutor;
     private $emailProdutor;
     
-    public function __construct($codigoProdutor, $nomeProdutor, $apelidoProdutor, $contactoProdutor, $emailProdutor) {
+    public function __construct($codigoProdutor = null, $nomeProdutor = null, $apelidoProdutor = null, $contactoProdutor = null, $emailProdutor = null) {
         $this->codigoProdutor = $codigoProdutor;
         $this->nomeProdutor = $nomeProdutor;
         $this->apelidoProdutor = $apelidoProdutor;

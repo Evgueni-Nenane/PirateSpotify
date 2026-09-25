@@ -1,4 +1,3 @@
-
 <?php
 //Cantor.php
 class Cantor
@@ -10,11 +9,12 @@ class Cantor
     private $emailCantor;
 
 
-    public function __construct($codigoCantor, $nomeCantor, $apelidoCantor, $emailCantor)
+    public function __construct($codigoCantor = null, $nomeCantor = null, $apelidoCantor = null, $contactoCantor = null, $emailCantor = null)
     {
         $this->codigoCantor = $codigoCantor;
         $this->nomeCantor = $nomeCantor;
         $this->apelidoCantor = $apelidoCantor;
+        $this->contactoCantor = $contactoCantor;
         $this->emailCantor = $emailCantor;
     }
 
@@ -71,13 +71,11 @@ class Cantor
 
     public function getNomeCompleto()
     {
-        return $this->nomeCantor + " " + $this->apelidoCantor;
+        return $this->nomeCantor . " " . $this->apelidoCantor;
     }
 
     public function __toString()
     {
-        return "Cantor:{$this->nomeCantor}"; //Devia ser nome completo mas minha concatenacao n ta sair.
+        return "Cantor:{$this->nomeCantor} {$this->apelidoCantor}";
     }
 }
-
-?>

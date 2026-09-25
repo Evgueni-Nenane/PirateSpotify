@@ -1,27 +1,31 @@
 <?php
 
-require_once 'connection.php';
-require_once 'DiscoCompacto.php';
-require_once 'Edicao.php';
+require_once __DIR__ . '/connection.php';
+require_once __DIR__ . '/../model/discocompacto.php';
+require_once __DIR__ . '/../model/edicao.php';
 
 class DiscoDAO
 {
 
-    public function inserir($disco)
-    {
-        $conn = connection::connectionDB();
-        $sql = "INSERT INTO Disco_Compacto (Titulo, Preco, Ano_Edicao) VALUES (?, ?, ?)";
-        $ps = $conn->prepare($sql);
-        $Titulo = $disco->getTitulo();
-        $Preco = $disco->getPreco();
-        $Ano_Edicao = $disco->getAnoEdicao();
-        $ps->bind_param("sdi", $Titulo, $Preco, $Ano_Edicao);
+   public function inserir($disco)
+{
+    $conn = Connection::connectionDB();
+    $sql = "INSERT INTO Disco_Compacto (Titulo, Preco, Ano_Edicao) VALUES (?, ?, ?)";
+    $ps = $conn->prepare($sql);
+    $Titulo = $disco->getTitulo();
+    $Preco = $disco->getPreco();
+    $Ano_Edicao = $disco->getAnoEdicao();
+    $ps->bind_param("sdi", $Titulo, $Preco, $Ano_Edicao);
 
+    try {
         if ($ps->execute()) {
             return $conn->insert_id;
         }
+    } catch (mysqli_sql_exception $e) {
         return -1;
     }
+    return -1;
+}
 
     public function listarTodos()
     {
@@ -144,14 +148,16 @@ class DiscoDAO
     }
 
     public function remover($codigoDisco)
-    {
-        $conn = connection::connectionDB();
+{
+    $conn = Connection::connectionDB();
+    $conn->begin_transaction();
 
-        $ps = $conn->prepare("DELETE FROM faixa WHERE idDisco = ?");
+    try {
+        $ps = $conn->prepare("DELETE FROM Faixa WHERE idDisco = ?");
         $ps->bind_param("i", $codigoDisco);
         $ps->execute();
 
-        $tabelasPonte = ["compositor_DC", "musico_DC", "cantor_DC", "edicao", "gravadoradisco", "prodc", "disco_genero"];
+        $tabelasPonte = ["Compositor_DC", "Musico_DC", "Cantor_DC", "Edicao", "GravadoraDisco", "ProDC", "Disco_Genero"];
         foreach ($tabelasPonte as $tabela) {
             $ps = $conn->prepare("DELETE FROM $tabela WHERE Codigo_DC = ?");
             $ps->bind_param("i", $codigoDisco);
@@ -161,7 +167,13 @@ class DiscoDAO
         $ps = $conn->prepare("DELETE FROM Disco_Compacto WHERE Codigo_Disco = ?");
         $ps->bind_param("i", $codigoDisco);
         $ps->execute();
+        $sucesso = $ps->affected_rows > 0;
 
-        return $ps->affected_rows > 0;
+        $conn->commit();
+        return $sucesso;
+    } catch (mysqli_sql_exception $e) {
+        $conn->rollback();
+        return false;
     }
+}
 }

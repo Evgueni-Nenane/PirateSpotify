@@ -7,7 +7,7 @@ class Editora {
     private $endereco;
 
     	
-    public function __construct($codigoEditora,$nomeEditora,$contactoEditora,$emailEditora,$endereco)
+    public function __construct($codigoEditora = null, $nomeEditora = null, $contactoEditora = null, $emailEditora = null, $endereco = null)
     {
         $this->codigoEditora=$codigoEditora;
         $this->nomeEditora=$nomeEditora;

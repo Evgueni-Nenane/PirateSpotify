@@ -15,7 +15,7 @@ class Utilizador
 	private $senha;
 	private $primeiroAcesso;
 
-	public function __construct($codigo, $nome, $apelido, $user_name, $genero, $perfil, $email, $contacto, $senha, $primeiroAcesso, $foto = null)
+	public function __construct($codigo = null, $nome = null, $apelido = null, $user_name = null, $genero = null, $perfil = null, $email = null, $contacto = null, $senha = null, $primeiroAcesso = null, $foto = null)
 	{
 		$this->codigo = $codigo;
 		$this->nome = $nome;

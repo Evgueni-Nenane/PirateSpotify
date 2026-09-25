@@ -11,7 +11,7 @@
 	private $codigoNivel;
 	private $nome;
 	
-	public function __construct($codigoNivel, $nome) {
+	public function __construct($codigoNivel = null, $nome = null) {
         $this->codigoNivel = $codigoNivel;
         $this->nome = $nome;
     }
@@ -32,4 +32,3 @@
 		return $this->getNome();
 	}
 }
-?>

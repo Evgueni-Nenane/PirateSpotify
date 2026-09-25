@@ -10,7 +10,7 @@
 	private $dataHora;
 	
 	
-public function __construct($codigo, $nome, $apelido, $perfil, $email, $accao, $dataHora) {
+public function __construct($codigo = null, $nome = null, $apelido = null, $perfil = null, $email = null, $accao = null, $dataHora = null) {
         $this->codigo = $codigo;
         $this->nome = $nome;
         $this->apelido = $apelido;
@@ -69,4 +69,3 @@ public function __construct($codigo, $nome, $apelido, $perfil, $email, $accao, $
 		return $this->perfil;
 	}
 	}
-?>

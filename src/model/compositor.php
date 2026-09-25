@@ -9,7 +9,7 @@ class Compositor
     private $contactoCompositor;
     private $emailCompositor;
 
-    public function __construct($codigoCompositor, $nomeCompositor, $apelidoCompositor, $contactoCompositor, $emailCompositor)
+    public function __construct($codigoCompositor = null, $nomeCompositor = null, $apelidoCompositor = null, $contactoCompositor = null, $emailCompositor = null)
     {
         $this->codigoCompositor = $codigoCompositor;
         $this->nomeCompositor = $nomeCompositor;
@@ -70,7 +70,7 @@ class Compositor
 
     public function getNomeCompleto()
     {
-        return $this->nomeCompositor + " " + $this->apelidoCompositor;
+        return $this->nomeCompositor . " " . $this->apelidoCompositor;
     }
 
 

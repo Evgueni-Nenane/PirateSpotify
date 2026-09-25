@@ -1,12 +1,12 @@
 <?php
 class Instrumento
 {
-    private  $codigo;
+    private $codigo;
     private $nome;
 
 
 
-    public function __construct($codigo, $nome)
+    public function __construct($codigo = null, $nome = null)
     {
         $this->codigo = $codigo;
         $this->nome = $nome;
