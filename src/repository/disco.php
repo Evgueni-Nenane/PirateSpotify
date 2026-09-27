@@ -6,26 +6,25 @@ require_once __DIR__ . '/../model/edicao.php';
 
 class DiscoDAO
 {
+    public function inserir($disco)
+    {
+        $conn = connection::connectionDB();
+        $sql = "INSERT INTO Disco_Compacto (Titulo, Preco, Ano_Edicao) VALUES (?, ?, ?)";
+        $ps = $conn->prepare($sql);
+        $Titulo = $disco->getTitulo();
+        $Preco = $disco->getPreco();
+        $Ano_Edicao = $disco->getAnoEdicao();
+        $ps->bind_param("sdi", $Titulo, $Preco, $Ano_Edicao);
 
-   public function inserir($disco)
-{
-    $conn = Connection::connectionDB();
-    $sql = "INSERT INTO Disco_Compacto (Titulo, Preco, Ano_Edicao) VALUES (?, ?, ?)";
-    $ps = $conn->prepare($sql);
-    $Titulo = $disco->getTitulo();
-    $Preco = $disco->getPreco();
-    $Ano_Edicao = $disco->getAnoEdicao();
-    $ps->bind_param("sdi", $Titulo, $Preco, $Ano_Edicao);
-
-    try {
-        if ($ps->execute()) {
-            return $conn->insert_id;
+        try {
+            if ($ps->execute()) {
+                return $conn->insert_id;
+            }
+        } catch (mysqli_sql_exception $e) {
+            return -1;
         }
-    } catch (mysqli_sql_exception $e) {
         return -1;
     }
-    return -1;
-}
 
     public function listarTodos()
     {
@@ -46,15 +45,9 @@ class DiscoDAO
                 $row['Titulo'],
                 $row['Preco'],
                 $row['Ano_Edicao'],
-                [],   // generoMusical
-                [],   // cantores
-                [],   // musicos
-                [],   // compositores
-                [],   // produtores
-                [],   // gravadoras
-                [],   // editoras
-                null, //edicao
-                []    // faixas
+                [], [], [], [], [], [], [],
+                null,
+                []
             );
             $disco->setGeneroMusicalTxt($row['Generos']);
             $discos[] = $disco;
@@ -82,15 +75,9 @@ class DiscoDAO
             $row['Titulo'],
             $row['Preco'],
             $row['Ano_Edicao'],
-            [],    // generoMusical
-            [],    // cantores
-            [],    // musicos
-            [],    // compositores
-            [],    // produtores
-            [],    // gravadoras
-            [],    // editoras
-            null,  // edicao
-            []     // faixas
+            [], [], [], [], [], [], [],
+            null,
+            []
         );
     }
 
@@ -98,7 +85,7 @@ class DiscoDAO
     {
         $conn = connection::connectionDB();
         $sql = "SELECT d.Codigo_Disco, d.Titulo, d.Preco, d.Ano_Edicao, e.Codigo_Editora, e.Data_Edicao"
-            . " FROM Disco_Compacto d LEFT JOIN Edicao e ON d.Codigo_Disco = e.Codigo_DC"
+            . " FROM Disco_Compacto d LEFT JOIN Edicao e ON d.Codigo_Disco = e.Codigo_Disco"
             . " WHERE d.Codigo_Disco = ?";
 
         $ps = $conn->prepare($sql);
@@ -111,19 +98,13 @@ class DiscoDAO
         }
 
         $disco = new DiscoCompacto(
-           $row['Codigo_Disco'],
+            $row['Codigo_Disco'],
             $row['Titulo'],
             $row['Preco'],
             $row['Ano_Edicao'],
-            [],    // generoMusical
-            [],    // cantores
-            [],    // musicos
-            [],    // compositores
-            [],    // produtores
-            [],    // gravadoras
-            [],    // editoras
-            null,  // edicao
-            []     // faixas
+            [], [], [], [], [], [], [],
+            null,
+            []
         );
 
         $edicao = new Edicao($row['Codigo_Disco'], $row['Codigo_Editora'], $row['Data_Edicao']);
@@ -148,32 +129,41 @@ class DiscoDAO
     }
 
     public function remover($codigoDisco)
-{
-    $conn = Connection::connectionDB();
-    $conn->begin_transaction();
+    {
+        $conn = connection::connectionDB();
+        $conn->begin_transaction();
 
-    try {
-        $ps = $conn->prepare("DELETE FROM Faixa WHERE idDisco = ?");
-        $ps->bind_param("i", $codigoDisco);
-        $ps->execute();
-
-        $tabelasPonte = ["Compositor_DC", "Musico_DC", "Cantor_DC", "Edicao", "GravadoraDisco", "ProDC", "Disco_Genero"];
-        foreach ($tabelasPonte as $tabela) {
-            $ps = $conn->prepare("DELETE FROM $tabela WHERE Codigo_DC = ?");
+        try {
+            $ps = $conn->prepare("DELETE FROM Faixa WHERE idDisco = ?");
             $ps->bind_param("i", $codigoDisco);
             $ps->execute();
+
+            
+            $tabelasComCodigoDC = ["Compositor_DC", "Musico_DC", "Cantor_DC", "Disco_Genero"];
+            foreach ($tabelasComCodigoDC as $tabela) {
+                $ps = $conn->prepare("DELETE FROM $tabela WHERE Codigo_DC = ?");
+                $ps->bind_param("i", $codigoDisco);
+                $ps->execute();
+            }
+
+            
+            $tabelasComCodigoDisco = ["Edicao", "GravadoraDisco", "ProDC"];
+            foreach ($tabelasComCodigoDisco as $tabela) {
+                $ps = $conn->prepare("DELETE FROM $tabela WHERE Codigo_Disco = ?");
+                $ps->bind_param("i", $codigoDisco);
+                $ps->execute();
+            }
+
+            $ps = $conn->prepare("DELETE FROM Disco_Compacto WHERE Codigo_Disco = ?");
+            $ps->bind_param("i", $codigoDisco);
+            $ps->execute();
+            $sucesso = $ps->affected_rows > 0;
+
+            $conn->commit();
+            return $sucesso;
+        } catch (mysqli_sql_exception $e) {
+            $conn->rollback();
+            return false;
         }
-
-        $ps = $conn->prepare("DELETE FROM Disco_Compacto WHERE Codigo_Disco = ?");
-        $ps->bind_param("i", $codigoDisco);
-        $ps->execute();
-        $sucesso = $ps->affected_rows > 0;
-
-        $conn->commit();
-        return $sucesso;
-    } catch (mysqli_sql_exception $e) {
-        $conn->rollback();
-        return false;
     }
-}
 }

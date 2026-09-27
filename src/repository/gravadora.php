@@ -54,7 +54,7 @@ class GravadoraDAO
         $gravadoras = [];
         $conn = Connection::connectionDB();
         $sql = "SELECT g.* FROM Gravadora g INNER JOIN GravadoraDisco gd " .
-            "ON g.Codigo_Gravadora = gd.Codigo_Gravadora WHERE gd.Codigo_DC = ?";
+            "ON g.Codigo_Gravadora = gd.Codigo_Gravadora WHERE gd.Codigo_Disco = ?";
         $ps = $conn->prepare($sql);
         $ps->bind_param("i", $codigoDisco);
         $ps->execute();
@@ -138,7 +138,7 @@ class GravadoraDAO
     public function inserirRelacaoDiscoGravadora($codigoDisco, $codigoGravadora)
     {
         $conn = Connection::connectionDB();
-        $sql = "INSERT INTO GravadoraDisco (Codigo_DC, Codigo_Gravadora) VALUES (?, ?)";
+        $sql = "INSERT INTO GravadoraDisco (Codigo_Disco, Codigo_Gravadora) VALUES (?, ?)";
         $ps = $conn->prepare($sql);
         $ps->bind_param("ii", $codigoDisco, $codigoGravadora);
 

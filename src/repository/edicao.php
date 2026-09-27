@@ -5,14 +5,14 @@ require_once __DIR__ . '/../model/edicao.php';
 class EdicaoDAO {
     public function inserir($edicao) {
         $conn = Connection::connectionDB();
-        $sql = "INSERT INTO Edicao (Data_Edicao, Codigo_DC, Codigo_Editora) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO Edicao (Data_Edicao, Codigo_Disco, Codigo_Editora) VALUES (?, ?, ?)";
         $ps = $conn->prepare($sql);
 
         $Data_Edicao = $edicao->getDataEdicao();
-        $Codigo_DC = $edicao->getCodigoDisco();
+        $Codigo_Disco = $edicao->getCodigoDisco();
         $Codigo_Editora = $edicao->getCodigoEditora();
 
-        $ps->bind_param("sii", $Data_Edicao, $Codigo_DC, $Codigo_Editora);
+        $ps->bind_param("sii", $Data_Edicao, $Codigo_Disco, $Codigo_Editora);
 
         try {
             if ($ps->execute()) {
@@ -26,7 +26,7 @@ class EdicaoDAO {
 
     public function buscarPorCodigoDisco($codigoDisco) {
         $conn = Connection::connectionDB();
-        $sql = "SELECT * FROM Edicao WHERE Codigo_DC = ?";
+        $sql = "SELECT * FROM Edicao WHERE Codigo_Disco = ?";
         $ps = $conn->prepare($sql);
         $ps->bind_param("i", $codigoDisco);
         $ps->execute();
@@ -34,7 +34,7 @@ class EdicaoDAO {
 
         if ($row) {
             return new Edicao(
-                $row['Codigo_DC'],
+                $row['Codigo_Disco'],
                 $row['Codigo_Editora'],
                 $row['Data_Edicao']
             );

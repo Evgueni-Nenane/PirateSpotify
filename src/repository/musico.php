@@ -8,15 +8,16 @@ class MusicoDAO
     public function inserir($musico)
     {
         $conn = connection::connectionDB();
-        $sql = "INSERT INTO Musico (Nome_Musico, Apelido_Musico, Contacto_Musico, Email_Musico) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO Musico (Nome_Musico, Apelido_Musico, Contacto_Musico, Email_Musico, Nome_Art_Musico) VALUES (?, ?, ?, ?, ?)";
         $ps = $conn->prepare($sql);
 
         $nome = $musico->getNomeMusico();
         $apelido = $musico->getApelidoMusico();
         $contacto = $musico->getContactoMusico();
         $email = $musico->getEmailMusico();
+        $nomeArtistico = $musico->getNomeArtistico();
 
-        $ps->bind_param("ssss", $nome, $apelido, $contacto, $email);
+        $ps->bind_param("sssss", $nome, $apelido, $contacto, $email, $nomeArtistico);
 
         try {
             if ($ps->execute()) {
@@ -36,14 +37,7 @@ class MusicoDAO
         $result = $conn->query($sql);
 
         while ($row = $result->fetch_assoc()) {
-            $musicos[] = new Musico(
-                $row['Codigo_Musico'],
-                $row['Nome_Musico'],
-                $row['Apelido_Musico'],
-                $this->buscarInstrumentosDoMusico($row['Codigo_Musico']),
-                $row['Contacto_Musico'],
-                $row['Email_Musico']
-            );
+            $musicos[] = $this->montarMusico($row);
         }
         return $musicos;
     }
@@ -60,14 +54,7 @@ class MusicoDAO
         $rows = $ps->get_result();
 
         while ($row = $rows->fetch_assoc()) {
-            $musicos[] = new Musico(
-                $row['Codigo_Musico'],
-                $row['Nome_Musico'],
-                $row['Apelido_Musico'],
-                $this->buscarInstrumentosDoMusico($row['Codigo_Musico']),
-                $row['Contacto_Musico'],
-                $row['Email_Musico']
-            );
+            $musicos[] = $this->montarMusico($row);
         }
         return $musicos;
     }
@@ -83,15 +70,22 @@ class MusicoDAO
         $row = $ps->get_result()->fetch_assoc();
 
         if ($row) {
-            $musico = new Musico(
-                $row['Codigo_Musico'],
-                $row['Nome_Musico'],
-                $row['Apelido_Musico'],
-                $this->buscarInstrumentosDoMusico($row['Codigo_Musico']),
-                $row['Contacto_Musico'],
-                $row['Email_Musico']
-            );
+            $musico = $this->montarMusico($row);
         }
+        return $musico;
+    }
+
+    private function montarMusico($row)
+    {
+        $musico = new Musico(
+            $row['Codigo_Musico'],
+            $row['Nome_Musico'],
+            $row['Apelido_Musico'],
+            $this->buscarInstrumentosDoMusico($row['Codigo_Musico']),
+            $row['Contacto_Musico'],
+            $row['Email_Musico']
+        );
+        $musico->setNomeArtistico($row['Nome_Art_Musico']);
         return $musico;
     }
 
@@ -121,14 +115,15 @@ class MusicoDAO
     public function atualizar($musico)
     {
         $conn = connection::connectionDB();
-        $sql = "UPDATE Musico SET Email_Musico = ?, Contacto_Musico = ? WHERE Codigo_Musico = ?";
+        $sql = "UPDATE Musico SET Email_Musico = ?, Contacto_Musico = ?, Nome_Art_Musico = ? WHERE Codigo_Musico = ?";
         $ps = $conn->prepare($sql);
 
         $email = $musico->getEmailMusico();
         $contacto = $musico->getContactoMusico();
+        $nomeArtistico = $musico->getNomeArtistico();
         $codigo = $musico->getCodigoMusico();
 
-        $ps->bind_param("ssi", $email, $contacto, $codigo);
+        $ps->bind_param("sssi", $email, $contacto, $nomeArtistico, $codigo);
         $ps->execute();
         return $ps->affected_rows > 0;
     }

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../model/log.php';
+require_once __DIR__ . '/../model/logs.php';
 require_once __DIR__ . '/../model/nivelacesso.php';
 require_once __DIR__ . '/../model/utilizador.php';
 require_once __DIR__ . '/../model/sessao.php';
@@ -13,10 +13,10 @@ class LoginDAO
     {
         $conn = connection::connectionDB();
         $sql = "SELECT Codigo_User, Nome, Apelido, UserName, Genero, Email, Contacto, "
-            . "Foto, Codigo_Nivel, NomeNivel"
+            . "Foto, Perfil, NomeNivel"
             . " FROM Utilizador u"
             . " INNER JOIN NivelAcesso n"
-            . " ON u.Codigo_Nivel = n.CodigoNivel"
+            . " ON u.Perfil = n.CodigoNivel"
             . " WHERE BINARY username = ? AND BINARY senha = ?";
 
         $ps = $conn->prepare($sql);
@@ -25,7 +25,7 @@ class LoginDAO
         $row = $ps->get_result()->fetch_assoc();
 
         if ($row) {
-            $perfil = new NivelAcesso($row['Codigo_Nivel'], $row['NomeNivel']);
+            $perfil = new NivelAcesso($row['Perfil'], $row['NomeNivel']);
 
             $userSessao = new Utilizador(
                 foto: $row['Foto'],
@@ -58,32 +58,34 @@ class LoginDAO
     public function isPrimeiroAcesso($username, $senha)
     {
         $conn = connection::connectionDB();
-        $sql = "SELECT primeiro_acesso FROM utilizador WHERE UserName = ? AND Senha = ?";
+        $sql = "SELECT Primeiro_Acesso FROM Utilizador WHERE UserName = ? AND Senha = ?";
         $ps = $conn->prepare($sql);
         $ps->bind_param("ss", $username, $senha);
         $ps->execute();
         $row = $ps->get_result()->fetch_assoc();
 
-        return $row ? (bool) $row['primeiro_acesso'] : false;
+        return $row ? (bool) $row['Primeiro_Acesso'] : false;
     }
 
     public function atualizarSenha($username, $senhaAntiga, $novaSenha)
     {
         $conn = connection::connectionDB();
-        $sql = "UPDATE utilizador SET senha = ?, primeiro_acesso = 0 WHERE BINARY username = ? AND BINARY senha = ?";
+        $sql = "UPDATE Utilizador SET Senha = ?, Primeiro_Acesso = 0 WHERE BINARY UserName = ? AND BINARY Senha = ?";
         $ps = $conn->prepare($sql);
         $ps->bind_param("sss", $novaSenha, $username, $senhaAntiga);
         $ps->execute();
         return $ps->affected_rows > 0;
     }
 
-    public function resetarSenha($codigoUser, $senha)
+    public function resetarSenha($codigoUser)
     {
         $conn = connection::connectionDB();
-        $sql = "UPDATE utilizador SET senha = ?, primeiro_acesso = 1 WHERE codigo_user = ?";
+        $sql = "UPDATE Utilizador SET Senha = ?, Primeiro_Acesso = 1 WHERE Codigo_User = ?";
         $ps = $conn->prepare($sql);
-        $senhaPadrao = "User258";
+
+        $senhaPadrao = "user258";
         $ps->bind_param("si", $senhaPadrao, $codigoUser);
+
         $ps->execute();
         return $ps->affected_rows > 0;
     }
