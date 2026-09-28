@@ -1,6 +1,4 @@
 <?php 
-
-
 require_once __DIR__ . '/../model/instrumento.php';
 require_once __DIR__ . '/../repository/instrumento.php';
 
