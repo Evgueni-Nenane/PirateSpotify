@@ -23,7 +23,7 @@ body {
 
 .card {
     width: 35%;
-    height: 60vh;
+    height: 70vh;
     margin: 0 0 0 5rem;
     padding: 2em;
     border-radius: 6px;
@@ -54,6 +54,7 @@ label {
 .campo {
     margin-bottom: 18px;
 }
+
 
 .center {
     display: flex;

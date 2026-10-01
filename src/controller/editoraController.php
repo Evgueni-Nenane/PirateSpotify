@@ -8,7 +8,7 @@ class EditoraController {
 	
 	public function __construct()
     { 
-        $this->editoraDAO = new EditoraDAO;
+        $this->editoraDAO = new EditoraDAO();
        } 
 		
 	

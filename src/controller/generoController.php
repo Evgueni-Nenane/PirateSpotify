@@ -8,7 +8,7 @@ require_once __DIR__ . '/../repository/generorepository.php';
 
    public function __construct()
    { 
-    $this->generoDAO = new GeneroDAO;
+    $this->generoDAO = new GeneroDAO();
      }
 
     public function adicionarGenero($genero) {

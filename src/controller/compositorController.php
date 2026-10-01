@@ -9,7 +9,7 @@ require_once __DIR__ . '/../model/compositor.php';
 	
 	public function __construct()
     {
-        $this->compositorDAO = new CompositorDAO;
+        $this->compositorDAO = new CompositorDAO();
     } 
 		
     public function cadastrarCompositor($compositor) {

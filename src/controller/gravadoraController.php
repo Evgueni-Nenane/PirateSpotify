@@ -8,7 +8,7 @@ require_once __DIR__ . '/../repository/gravadora.php';
 
 public function __construct()
 { 
-    $this->gravadoraDAO = new GravadoraDAO;
+    $this->gravadoraDAO = new GravadoraDAO();
 }
     public function cadastrarGravadora($gravadora) {
         return $this->gravadoraDAO->inserir($gravadora);
