@@ -1,0 +1,530 @@
+/* ============================================================ */
+/* 1. RESET & BASE                                              */
+/* ============================================================ */
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #1e1e1e;
+    line-height: 1.5;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* ============================================================ */
+/* 2. CHECKBOX / RADIO HACK (Base)                              */
+/* ============================================================ */
+/* Estes inputs são escondidos mas controlam modais e abas */
+.tab-toggle,
+.modal-toggle {
+    display: none;
+}
+
+/* ============================================================ */
+/* 3. LAYOUT PRINCIPAL                                          */
+/* ============================================================ */
+.app-container {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 100vh;
+    overflow: hidden;
+}
+
+/* ============================================================ */
+/* 4. SIDEBAR                                                   */
+/* ============================================================ */
+aside {
+    background: #fff;
+    padding: 1.5rem 1rem;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.04);
+    overflow-y: auto;
+    border-right: 1px solid #eaeaea;
+}
+
+.title h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.8rem;
+    padding-left: 0.5rem;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.secnav {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8e8e8e;
+    padding: 1rem 0.5rem 0.4rem;
+    margin-top: 0.5rem;
+}
+
+nav ul li a {
+    display: block;
+    color: #2c2c2c;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    transition: background 0.15s;
+}
+
+nav ul li a:hover {
+    background: #f0f0f0;
+}
+
+nav ul li a.active {
+    background: #1e1e1e;
+    color: #fff;
+}
+
+/* ============================================================ */
+/* 5. ÁREA PRINCIPAL (Container + Header)                       */
+/* ============================================================ */
+.containermain {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    background: #fafafa;
+    padding: 1.5rem 2rem;
+    gap: 1.5rem;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f0f0f0;
+}
+
+.pagetitle h2 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.pagetitle p {
+    font-size: 0.85rem;
+    color: #8e8e8e;
+}
+
+.userdetails {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.userdetailstxt {
+    text-align: right;
+}
+
+.userdetailstxt p:first-child {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.userdetailstxt p:last-child {
+    font-size: 0.75rem;
+    color: #8e8e8e;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.userdetails img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    object-fit: cover;
+    border: 2px solid #f0f0f0;
+}
+
+/* ============================================================ */
+/* 6. CARTÃO COM ABAS                                           */
+/* ============================================================ */
+.card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f0f0f0;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid #f0f0f0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* ----- 6.1 Abas (Tabs) ----- */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: #f0f0f0;
+    padding: 0.3rem;
+    border-radius: 10px;
+}
+
+.tab-label {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6b6b6b;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+}
+
+.tab-label:hover {
+    color: #1e1e1e;
+}
+
+.panel {
+    display: none;
+}
+
+/* Os rádios são irmãos de .card-header e dos .panel, por isso o "~" funciona */
+#tab-prod:checked ~ .card-header [for="tab-prod"],
+#tab-grav:checked ~ .card-header [for="tab-grav"],
+#tab-edit:checked ~ .card-header [for="tab-edit"] {
+    background: #fff;
+    color: #1e1e1e;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+#tab-prod:checked ~ .panel-prod,
+#tab-grav:checked ~ .panel-grav,
+#tab-edit:checked ~ .panel-edit {
+    display: block;
+}
+
+/* ============================================================ */
+/* 7. INPUTS E PESQUISA                                         */
+/* ============================================================ */
+.search-input {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    width: 250px;
+}
+
+.search-input:focus,
+.label-group input:focus {
+    border-color: #1e1e1e;
+    box-shadow: 0 0 0 3px rgba(30, 30, 30, 0.06);
+}
+
+/* ============================================================ */
+/* 8. BOTÕES                                                    */
+/* ============================================================ */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem 1.2rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: #1e1e1e;
+    color: #fff;
+    border-color: #1e1e1e;
+}
+
+.btn-primary:hover {
+    background: #333;
+    border-color: #333;
+}
+
+.btn-secondary {
+    background: #fff;
+    color: #1e1e1e;
+    border-color: #e0e0e0;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+    border-color: #d0d0d0;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+}
+
+label.btn {
+    cursor: pointer;
+}
+
+/* ============================================================ */
+/* 9. TABELAS                                                   */
+/* ============================================================ */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+thead {
+    background: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+th {
+    text-align: left;
+    padding: 0.8rem 1rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6b6b6b;
+    white-space: nowrap;
+}
+
+td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    color: #2c2c2c;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background: #fafafa;
+}
+
+tbody tr:has(input:checked) td {
+    background: #f0f0f0;
+}
+
+.col-sel {
+    width: 2.5rem;
+}
+
+input[type=radio] {
+    accent-color: #1e1e1e;
+}
+
+/* ----- 9.1 Ações da Tabela ----- */
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* ============================================================ */
+/* 10. MODAIS                                                   */
+/* ============================================================ */
+/* O checkbox (modal-toggle) é imediatamente seguido pelo overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 1.5rem;
+}
+
+.modal-toggle:checked + .modal-overlay {
+    display: flex;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: modalIn 0.2s ease;
+}
+
+.modal.confirm {
+    max-width: 400px;
+}
+
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.modal-close {
+    font-size: 1.4rem;
+    color: #8e8e8e;
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    background: #f5f5f5;
+    color: #1e1e1e;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    font-size: 0.9rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* ============================================================ */
+/* 11. FORMULÁRIOS (dentro de modais e painéis)                 */
+/* ============================================================ */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.5rem;
+}
+
+.full {
+    grid-column: span 2;
+}
+
+.label-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.label-group label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #4a4a4a;
+}
+
+.label-group input {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    width: 100%;
+}
+
+/* ============================================================ */
+/* 12. SCROLLBAR                                                */
+/* ============================================================ */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 3px;
+}
+
+/* ============================================================ */
+/* 13. RESPONSIVIDADE                                           */
+/* ============================================================ */
+@media (max-width: 1024px) {
+    .app-container {
+        grid-template-columns: 220px 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        grid-template-columns: 1fr;
+    }
+
+    aside {
+        display: none;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .full {
+        grid-column: span 1;
+    }
+}

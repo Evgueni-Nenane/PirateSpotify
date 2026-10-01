@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artistas | Sistema de Gestão</title>
+    <link rel="stylesheet" href="../css/artistas.css">
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- CHECKBOX / RADIO HACK CONTROLS (Invisíveis)                  -->
+    <!-- ============================================================ -->
+    <!-- Abas Principais -->
+    <input type="radio" name="tabs" id="tab-musicos" class="tab-toggle" checked>
+    <input type="radio" name="tabs" id="tab-compositores" class="tab-toggle">
+    <input type="radio" name="tabs" id="tab-cantores" class="tab-toggle">
+
+    <!-- Modais -->
+    <input type="checkbox" id="modal-editar-artista-toggle" class="modal-toggle">
+    <input type="checkbox" id="modal-adicionar-artista-toggle" class="modal-toggle">
+
+    <!-- ============================================================ -->
+    <!-- MAIN APPLICATION                                             -->
+    <!-- ============================================================ -->
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside>
+            <div class="title" id="artistas">
+                <h1>DiscoGest</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li class="secnav">Menu Principal</li>
+                    <li><a href="registro.html">Registar</a></li>
+                    <li><a href="listagemdiscos.html">Listar Discos</a></li>
+                    <li class="secnav">Intervenientes</li>
+                    <li><a href="#artistas" class="active">Artistas</a></li>
+                    <li><a href="producao.html">Produção</a></li>
+                    <li class="secnav">Cadastros</li>
+                    <li><a href="instrumentos.html">Instrumentos</a></li>
+                    <li><a href="generos.html">Géneros</a></li>
+                    <li class="secnav">Acções</li>
+                    <li><a href="#">Exportar</a></li>
+                    <li><a href="administracao.html">Administração</a></li>
+                    <li><a href="logs.html">Logs</a></li>
+                    <li><a href="#">Sair</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <div class="containermain">
+            <!-- HEADER -->
+            <header>
+                <div class="pagetitle">
+                    <h2>Sistema de Gestão de Discos</h2>
+                    <p>Gestão de artistas</p>
+                </div>
+                <div class="userdetails">
+                    <div class="userdetailstxt">
+                        <!-- PHP: nome completo do utilizador autenticado -->
+                        <p>Nome Apelido</p>
+                        <!-- PHP: perfil / nível de acesso do utilizador -->
+                        <p>Perfil</p>
+                    </div>
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='42' height='42' viewBox='0 0 42 42'%3E%3Crect width='42' height='42' rx='21' fill='%23e0e0e0'/%3E%3Ccircle cx='21' cy='16' r='8' fill='%23b0b0b0'/%3E%3Cpath d='M6 38c0-8 7-13 15-13s15 5 15 13' fill='%23b0b0b0'/%3E%3C/svg%3E" alt="Foto de Perfil">
+                </div>
+            </header>
+
+            <!-- MAIN TABLE -->
+            <main>
+                <div class="card">
+                    <!-- Cabeçalho com Abas e Pesquisa -->
+                    <div class="card-header">
+                        <div class="tabs">
+                            <label for="tab-musicos" class="tab-label">Listar Músicos</label>
+                            <label for="tab-compositores" class="tab-label">Listar Compositores</label>
+                            <label for="tab-cantores" class="tab-label">Listar Cantores</label>
+                        </div>
+                        <input type="text" class="search-input" placeholder="Pesquisar artista...">
+                    </div>
+
+                    <!-- Tabela: Músicos -->
+                    <div class="tab-content tab-content-musicos">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nome Completo</th>
+                                        <th>Instrumento</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- PHP: repetir por linha (dados de músicos vindos da base de dados) -->
+                                    <tr>
+                                        <td>Nome Completo</td>
+                                        <td>Instrumento</td>
+                                        <td>E-mail</td>
+                                        <td>Telefone</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tabela: Compositores -->
+                    <div class="tab-content tab-content-compositores">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nome Completo</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- PHP: repetir por linha (dados de compositores vindos da base de dados) -->
+                                    <tr>
+                                        <td>Nome Completo</td>
+                                        <td>E-mail</td>
+                                        <td>Telefone</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tabela: Cantores -->
+                    <div class="tab-content tab-content-cantores">
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Nome Completo</th>
+                                        <th>E-mail</th>
+                                        <th>Telefone</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- PHP: repetir por linha (dados de cantores vindos da base de dados) -->
+                                    <tr>
+                                        <td>Nome Completo</td>
+                                        <td>E-mail</td>
+                                        <td>Telefone</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Ações da Tabela -->
+                    <div class="table-actions">
+                        <button class="btn btn-secondary btn-sm" type="button">Remover</button>
+                        <label for="modal-editar-artista-toggle" class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">Editar</label>
+                        <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAIS (Controlados por CSS)                                 -->
+    <!-- ============================================================ -->
+
+    <!-- MODAL: EDITAR ARTISTA -->
+    <div class="modal-overlay modal-editar-artista">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>Editar Artista</h2>
+                <label for="modal-editar-artista-toggle" class="modal-close">&times;</label>
+            </div>
+            <div class="modal-body">
+                <!-- PHP: preencher os campos com os dados do artista selecionado -->
+                <div class="form-grid">
+                    <div class="label-group">
+                        <label for="edit-nome">Nome</label>
+                        <input type="text" id="edit-nome" value="">
+                    </div>
+                    <div class="label-group">
+                        <label for="edit-apelido">Apelido</label>
+                        <input type="text" id="edit-apelido" value="">
+                    </div>
+                    <div class="label-group form-grid-full">
+                        <label for="edit-instrumento">Instrumento</label>
+                        <input type="text" id="edit-instrumento" value="" readonly style="background:#fafafa; cursor:default;">
+                    </div>
+                    <div class="label-group form-grid-full">
+                        <label for="edit-contacto">Contacto</label>
+                        <input type="text" id="edit-contacto" value="">
+                    </div>
+                    <div class="label-group form-grid-full">
+                        <label for="edit-email">E-mail</label>
+                        <input type="email" id="edit-email" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <label for="modal-editar-artista-toggle" class="btn btn-secondary">Cancelar</label>
+                <label for="modal-editar-artista-toggle" class="btn btn-primary">Salvar Alterações</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADICIONAR ARTISTA (Com seletor de tipo e instrumentos) -->
+    <div class="modal-overlay modal-adicionar-artista">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>Cadastrar Artista</h2>
+                <label for="modal-adicionar-artista-toggle" class="modal-close">&times;</label>
+            </div>
+            <div class="modal-body">
+                <!-- 
+                  Controla a visibilidade dos instrumentos.
+                  Os radios estão aqui, escondidos, mas controlam o CSS abaixo.
+                -->
+                <input type="radio" name="tipo-artista" id="add-tipo-musico" class="tipo-toggle" checked>
+                <input type="radio" name="tipo-artista" id="add-tipo-compositor" class="tipo-toggle">
+                <input type="radio" name="tipo-artista" id="add-tipo-cantor" class="tipo-toggle">
+
+                <div class="form-grid">
+                    <div class="label-group">
+                        <label for="add-nome">Nome</label>
+                        <input type="text" id="add-nome" placeholder="Nome do artista">
+                    </div>
+                    <div class="label-group">
+                        <label for="add-apelido">Apelido</label>
+                        <input type="text" id="add-apelido" placeholder="Apelido do artista">
+                    </div>
+                    
+                    <div class="label-group form-grid-full">
+                        <label>Tipo de Artista</label>
+                        <!-- Botões que funcionam como select, mas controlam os radios -->
+                        <div class="tipo-selector">
+                            <label for="add-tipo-musico" class="tipo-btn">Músico</label>
+                            <label for="add-tipo-compositor" class="tipo-btn">Compositor</label>
+                            <label for="add-tipo-cantor" class="tipo-btn">Cantor</label>
+                        </div>
+                    </div>
+
+                    <!-- Secção de Instrumentos: Só aparece quando "Músico" está selecionado -->
+                    <div class="instrumento-group">
+                        <label>Instrumentos Musicais</label>
+                        <div class="search-add">
+                            <input type="text" placeholder="Pesquisar instrumento...">
+                            <button class="btn btn-primary btn-sm" type="button">Adicionar</button>
+                        </div>
+                        <div class="list-box">
+                            <!-- PHP: repetir por item (instrumentos vindos da base de dados) -->
+                            <div class="list-item"><input type="checkbox" id="inst1"><label for="inst1">Nome do instrumento</label></div>
+                        </div>
+                    </div>
+
+                    <div class="label-group form-grid-full">
+                        <label for="add-contacto">Contacto</label>
+                        <input type="text" id="add-contacto" placeholder="Número de telefone">
+                    </div>
+                    <div class="label-group form-grid-full">
+                        <label for="add-email">E-mail</label>
+                        <input type="email" id="add-email" placeholder="Endereço de e-mail">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <label for="modal-adicionar-artista-toggle" class="btn btn-secondary">Cancelar</label>
+                <label for="modal-adicionar-artista-toggle" class="btn btn-primary">Cadastrar</label>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

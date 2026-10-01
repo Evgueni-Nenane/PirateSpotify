@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administração | Sistema de Gestão</title>
+<link rel="stylesheet" href="../css/administracao.css">
+</head>
+<body>
+
+<div class="app-container">
+  <aside>
+    <div class="title" id="administracao"><h1>DiscoGest</h1></div>
+    <nav>
+      <ul>
+        <li class="secnav">Menu Principal</li>
+        <li><a href="registro.html">Registar</a></li>
+        <li><a href="listagemdiscos.html">Listar Discos</a></li>
+        <li class="secnav">Intervenientes</li>
+        <li><a href="artistas.html">Artistas</a></li>
+        <li><a href="producao.html">Produção</a></li>
+        <li class="secnav">Cadastros</li>
+        <li><a href="instrumentos.html">Instrumentos</a></li>
+        <li><a href="generos.html">Géneros</a></li>
+        <li class="secnav">Acções</li>
+        <li><a href="#">Exportar</a></li>
+        <li><a href="#administracao" class="active">Administração</a></li>
+        <li><a href="logs.html">Logs</a></li>
+        <li><a href="#">Sair</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="containermain">
+    <header>
+      <div class="pagetitle">
+        <h2>Sistema de Gestão de Discos</h2>
+        <p>Administração de utilizadores</p>
+      </div>
+      <div class="userdetails">
+        <div class="userdetailstxt"><!-- PHP: nome do utilizador autenticado --><p>Nome Apelido</p><!-- PHP: perfil do utilizador --><p>Perfil</p></div>
+        <img src="../resources/user.png" alt="Foto de Perfil">
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <!-- Rádios das abas: irmãos directos de .card-header e dos .panel -->
+        <input type="radio" name="tabs" id="tab-cad" class="tab-toggle" checked>
+        <input type="radio" name="tabs" id="tab-lista" class="tab-toggle">
+
+        <div class="card-header">
+          <div class="tabs">
+            <label for="tab-cad" class="tab-label">Cadastrar Utilizador</label>
+            <label for="tab-lista" class="tab-label">Informações de Utilizador</label>
+          </div>
+          <input type="search" class="search-input" placeholder="Pesquisar utilizador...">
+        </div>
+
+        <!-- ===== CADASTRAR ===== -->
+        <section class="panel panel-cad">
+          <form method="post" enctype="multipart/form-data">
+            <div class="cadastro-layout">
+              <div class="foto-user">
+                <div class="foto-preview"><img src="../resources/user.png" alt="Foto do Utilizador"></div>
+                <div class="foto-actions">
+                  <input type="file" id="cad-foto" name="foto" accept="image/*" class="file-hidden">
+                  <label for="cad-foto" class="btn btn-primary btn-sm">Escolher Foto</label>
+                  <!-- PHP: remover foto -->
+                  <button class="btn btn-secondary btn-sm" type="button">Remover Foto</button>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="label-group"><label for="cad-nome">Primeiro Nome *</label><input type="text" id="cad-nome" name="nome" required></div>
+                <div class="label-group"><label for="cad-apelido">Último Nome *</label><input type="text" id="cad-apelido" name="apelido" required></div>
+                <div class="label-group">
+                  <label for="cad-genero">Género</label>
+                  <select id="cad-genero" name="genero"><option value="MASCULINO">Masculino</option><option value="FEMININO">Feminino</option></select>
+                </div>
+                <div class="label-group">
+                  <label for="cad-perfil">Permissões de Utilizador</label>
+                  <select id="cad-perfil" name="perfil">
+                    <option value="Operador">Operador</option>
+                    <option value="Super Operador">Super Operador</option>
+                    <option value="Administrador">Administrador</option>
+                    <option value="Auditor">Auditor</option>
+                  </select>
+                </div>
+                <div class="label-group full"><label for="cad-username">Nome de Utilizador *</label><input type="text" id="cad-username" name="username" required></div>
+                <div class="label-group full"><label for="cad-email">E-mail Corporativo</label><input type="email" id="cad-email" name="email"></div>
+                <div class="label-group full"><label for="cad-tel">Número de Telemóvel</label><input type="tel" id="cad-tel" name="telefone"></div>
+                <div class="label-group full">
+                  <label for="cad-senha">Password Inicial</label>
+                  <div class="inline">
+                    <!-- PHP: gerar e preencher a senha padrão -->
+                    <input type="text" id="cad-senha" name="senha" readonly>
+                    <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="gerar-senha" formnovalidate>Gerar Senha</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="table-actions">
+              <button class="btn btn-primary" type="submit" name="acao" value="salvar">Salvar Utilizador</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ===== LISTA ===== -->
+        <section class="panel panel-lista">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th class="col-sel"></th><th>Código</th><th>Nome Completo</th><th>E-mail Corporativo</th><th>Género</th><th>Permissões</th><th>Telefone</th></tr></thead>
+              <tbody>
+                <!-- PHP: repetir por linha -->
+                <tr><td><input type="radio" name="sel-user" value="ID"></td><td>Código</td><td>Nome Completo</td><td>E-mail</td><td>Género</td><td>Permissões</td><td>Telefone</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <label for="m-rem-user" class="btn btn-secondary btn-sm">Remover Seleccionado</label>
+            <label for="m-reset-user" class="btn btn-secondary btn-sm">Resetar Senha</label>
+            <label for="m-edit-user" class="btn btn-primary btn-sm">Editar Utilizador</label>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL: EDITAR UTILIZADOR ============ -->
+<input type="checkbox" id="m-edit-user" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Editar Utilizador</h2><label for="m-edit-user" class="modal-close">&times;</label></div>
+  <form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="id">
+    <div class="modal-body">
+      <div class="cadastro-layout sm">
+        <div class="foto-user">
+          <div class="foto-preview"><img src="../resources/user.png" alt="Foto do Utilizador"></div>
+          <div class="foto-actions">
+            <input type="file" id="edit-foto" name="foto" accept="image/*" class="file-hidden">
+            <label for="edit-foto" class="btn btn-primary btn-sm">Escolher Foto</label>
+            <button class="btn btn-secondary btn-sm" type="button">Remover Foto</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <!-- Nome e apelido não podem ser editados -->
+          <div class="label-group"><label for="eu-nome">Primeiro Nome</label><input type="text" id="eu-nome" readonly></div>
+          <div class="label-group"><label for="eu-apelido">Último Nome</label><input type="text" id="eu-apelido" readonly></div>
+          <div class="label-group">
+            <label for="eu-genero">Género</label>
+            <select id="eu-genero" name="genero"><option value="MASCULINO">Masculino</option><option value="FEMININO">Feminino</option></select>
+          </div>
+          <div class="label-group">
+            <label for="eu-perfil">Permissões</label>
+            <select id="eu-perfil" name="perfil">
+              <option value="Operador">Operador</option>
+              <option value="Super Operador">Super Operador</option>
+              <option value="Administrador">Administrador</option>
+              <option value="Auditor">Auditor</option>
+            </select>
+          </div>
+          <div class="label-group full"><label for="eu-email">E-mail Corporativo</label><input type="email" id="eu-email" name="email"></div>
+          <div class="label-group full"><label for="eu-tel">Número de Telemóvel</label><input type="tel" id="eu-tel" name="telefone"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <label for="m-edit-user" class="btn btn-secondary">Cancelar</label>
+      <button class="btn btn-primary" type="submit">Atualizar Utilizador</button>
+    </div>
+  </form>
+</div></div>
+
+<!-- ============ MODAL: RESETAR SENHA ============ -->
+<input type="checkbox" id="m-reset-user" class="modal-toggle">
+<div class="modal-overlay"><div class="modal confirm">
+  <div class="modal-header"><h2>Resetar senha</h2><label for="m-reset-user" class="modal-close">&times;</label></div>
+  <form method="post">
+    <input type="hidden" name="id">
+    <div class="modal-body">Tem certeza que deseja resetar a senha deste utilizador? A nova senha será guardada em <strong>Credenciais_Resets</strong>.</div>
+    <div class="modal-footer">
+      <label for="m-reset-user" class="btn btn-secondary">Não</label>
+      <button class="btn btn-primary" type="submit">Sim</button>
+    </div>
+  </form>
+</div></div>
+
+<!-- ============ MODAL: REMOVER UTILIZADOR ============ -->
+<input type="checkbox" id="m-rem-user" class="modal-toggle">
+<div class="modal-overlay"><div class="modal confirm">
+  <div class="modal-header"><h2>Confirmar remoção</h2><label for="m-rem-user" class="modal-close">&times;</label></div>
+  <form method="post">
+    <input type="hidden" name="id">
+    <div class="modal-body">Tem certeza que deseja remover este/a utilizador/a?</div>
+    <div class="modal-footer">
+      <label for="m-rem-user" class="btn btn-secondary">Não</label>
+      <button class="btn btn-primary" type="submit">Sim</button>
+    </div>
+  </form>
+</div></div>
+
+</body>
+</html>

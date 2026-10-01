@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produção | Sistema de Gestão</title>
+<link rel="stylesheet" href="../css/producao.css">
+</head>
+<body>
+
+<div class="app-container">
+  <aside>
+    <div class="title" id="producao"><h1>DiscoGest</h1></div>
+    <nav>
+      <ul>
+        <li class="secnav">Menu Principal</li>
+        <li><a href="registro.html">Registar</a></li>
+        <li><a href="listagemdiscos.html">Listar Discos</a></li>
+        <li class="secnav">Intervenientes</li>
+        <li><a href="artistas.html">Artistas</a></li>
+        <li><a href="#producao" class="active">Produção</a></li>
+        <li class="secnav">Cadastros</li>
+        <li><a href="instrumentos.html">Instrumentos</a></li>
+        <li><a href="generos.html">Géneros</a></li>
+        <li class="secnav">Acções</li>
+        <li><a href="#">Exportar</a></li>
+        <li><a href="administracao.html">Administração</a></li>
+        <li><a href="logs.html">Logs</a></li>
+        <li><a href="#">Sair</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="containermain">
+    <header>
+      <div class="pagetitle">
+        <h2>Sistema de Gestão de Discos</h2>
+        <p>Gestão de produção</p>
+      </div>
+      <div class="userdetails">
+        <div class="userdetailstxt"><!-- PHP: nome do utilizador autenticado --><p>Nome Apelido</p><!-- PHP: perfil do utilizador --><p>Perfil</p></div>
+        <img src="../resources/user.png" alt="Foto de Perfil">
+      </div>
+    </header>
+
+    <main>
+      <div class="card">
+        <!-- Rádios das abas: irmãos directos de .card-header e dos .panel -->
+        <input type="radio" name="tabs" id="tab-prod" class="tab-toggle" checked>
+        <input type="radio" name="tabs" id="tab-grav" class="tab-toggle">
+        <input type="radio" name="tabs" id="tab-edit" class="tab-toggle">
+
+        <div class="card-header">
+          <div class="tabs">
+            <label for="tab-prod" class="tab-label">Produtores</label>
+            <label for="tab-grav" class="tab-label">Gravadoras</label>
+            <label for="tab-edit" class="tab-label">Editoras</label>
+          </div>
+          <input type="search" class="search-input" placeholder="Pesquisar...">
+        </div>
+
+        <!-- ===== PRODUTORES ===== -->
+        <section class="panel panel-prod">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th class="col-sel"></th><th>Nome</th><th>Contacto</th><th>E-mail</th></tr></thead>
+              <tbody>
+                <!-- PHP: repetir por linha -->
+                <tr><td><input type="radio" name="sel-prod" value="ID"></td><td>Nome</td><td>Contacto</td><td>E-mail</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <label for="m-rem-prod" class="btn btn-secondary btn-sm">Remover</label>
+            <label for="m-edit-prod" class="btn btn-secondary btn-sm">Editar</label>
+            <label for="m-add-prod" class="btn btn-primary btn-sm">Adicionar</label>
+          </div>
+        </section>
+
+        <!-- ===== GRAVADORAS ===== -->
+        <section class="panel panel-grav">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th class="col-sel"></th><th>Nome</th><th>Contacto</th><th>E-mail</th><th>Endereço</th></tr></thead>
+              <tbody>
+                <!-- PHP: repetir por linha -->
+                <tr><td><input type="radio" name="sel-grav" value="ID"></td><td>Nome</td><td>Contacto</td><td>E-mail</td><td>Endereço</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <label for="m-rem-grav" class="btn btn-secondary btn-sm">Remover</label>
+            <label for="m-edit-grav" class="btn btn-secondary btn-sm">Editar</label>
+            <label for="m-add-grav" class="btn btn-primary btn-sm">Adicionar</label>
+          </div>
+        </section>
+
+        <!-- ===== EDITORAS ===== -->
+        <section class="panel panel-edit">
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th class="col-sel"></th><th>Nome</th><th>Contacto</th><th>E-mail</th><th>Endereço</th></tr></thead>
+              <tbody>
+                <!-- PHP: repetir por linha -->
+                <tr><td><input type="radio" name="sel-edit" value="ID"></td><td>Nome</td><td>Contacto</td><td>E-mail</td><td>Endereço</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-actions">
+            <label for="m-rem-edit" class="btn btn-secondary btn-sm">Remover</label>
+            <label for="m-edit-edit" class="btn btn-secondary btn-sm">Editar</label>
+            <label for="m-add-edit" class="btn btn-primary btn-sm">Adicionar</label>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================= MODAIS: PRODUTOR ================= -->
+<input type="checkbox" id="m-add-prod" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Cadastrar Produtor</h2><label for="m-add-prod" class="modal-close">&times;</label></div>
+  <form>
+  <div class="modal-body"><div class="form-grid">
+    <div class="label-group"><label for="ap-nome">Nome *</label><input id="ap-nome" name="nome" type="text" required></div>
+    <div class="label-group"><label for="ap-apelido">Apelido *</label><input id="ap-apelido" name="apelido" type="text" required></div>
+    <div class="label-group full"><label for="ap-contacto">Contacto</label><input id="ap-contacto" name="contacto" type="tel"></div>
+    <div class="label-group full"><label for="ap-email">E-mail</label><input id="ap-email" name="email" type="email"></div>
+  </div></div>
+  <div class="modal-footer"><label for="m-add-prod" class="btn btn-secondary">Cancelar</label><button class="btn btn-primary" type="submit">Cadastrar</button></div>
+  </form>
+</div></div>
+
+<input type="checkbox" id="m-edit-prod" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Editar Produtor</h2><label for="m-edit-prod" class="modal-close">&times;</label></div>
+  <form>
+  <input type="hidden" name="id">
+  <div class="modal-body"><div class="form-grid">
+    <div class="label-group"><label for="ep-nome">Nome</label><input id="ep-nome" name="nome" type="text" required></div>
+    <div class="label-group"><label for="ep-apelido">Apelido</label><input id="ep-apelido" name="apelido" type="text" required></div>
+    <div class="label-group full"><label for="ep-contacto">Contacto</label><input id="ep-contacto" name="contacto" type="tel"></div>
+    <div class="label-group full"><label for="ep-email">E-mail</label><input id="ep-email" name="email" type="email"></div>
+  </div></div>
+  <div class="modal-footer"><label for="m-edit-prod" class="btn btn-secondary">Cancelar</label><button class="btn btn-primary" type="submit">Salvar Alterações</button></div>
+  </form>
+</div></div>
+
+<input type="checkbox" id="m-rem-prod" class="modal-toggle">
+<div class="modal-overlay"><div class="modal confirm">
+  <div class="modal-header"><h2>Confirmar remoção</h2><label for="m-rem-prod" class="modal-close">&times;</label></div>
+  <form>
+  <div class="modal-body">Tem certeza que deseja remover este produtor?</div>
+  <div class="modal-footer"><label for="m-rem-prod" class="btn btn-secondary">Não</label><button class="btn btn-primary" type="submit">Sim</button></div>
+  </form>
+</div></div>
+
+<!-- ================= MODAIS: GRAVADORA ================= -->
+<input type="checkbox" id="m-add-grav" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Cadastrar Gravadora</h2><label for="m-add-grav" class="modal-close">&times;</label></div>
+  <form>
+  <div class="modal-body"><div class="form-grid">
+    <div class="label-group full"><label for="ag-nome">Nome *</label><input id="ag-nome" name="nome" type="text" required></div>
+    <div class="label-group full"><label for="ag-contacto">Contacto</label><input id="ag-contacto" name="contacto" type="tel"></div>
+    <div class="label-group full"><label for="ag-email">E-mail</label><input id="ag-email" name="email" type="email"></div>
+    <div class="label-group full"><label for="ag-endereco">Endereço</label><input id="ag-endereco" name="endereco" type="text"></div>
+  </div></div>
+  <div class="modal-footer"><label for="m-add-grav" class="btn btn-secondary">Cancelar</label><button class="btn btn-primary" type="submit">Cadastrar</button></div>
+  </form>
+</div></div>
+
+<input type="checkbox" id="m-edit-grav" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Editar Gravadora</h2><label for="m-edit-grav" class="modal-close">&times;</label></div>
+  <form>
+  <input type="hidden" name="id">
+  <div class="modal-body"><div class="form-grid">
+    <div class="label-group full"><label for="eg-nome">Nome</label><input id="eg-nome" name="nome" type="text" required></div>
+    <div class="label-group full"><label for="eg-contacto">Contacto</label><input id="eg-contacto" name="contacto" type="tel"></div>
+    <div class="label-group full"><label for="eg-email">E-mail</label><input id="eg-email" name="email" type="email"></div>
+    <div class="label-group full"><label for="eg-endereco">Endereço</label><input id="eg-endereco" name="endereco" type="text"></div>
+  </div></div>
+  <div class="modal-footer"><label for="m-edit-grav" class="btn btn-secondary">Cancelar</label><button class="btn btn-primary" type="submit">Salvar Alterações</button></div>
+  </form>
+</div></div>
+
+<input type="checkbox" id="m-rem-grav" class="modal-toggle">
+<div class="modal-overlay"><div class="modal confirm">
+  <div class="modal-header"><h2>Confirmar remoção</h2><label for="m-rem-grav" class="modal-close">&times;</label></div>
+  <form>
+  <div class="modal-body">Tem certeza que deseja remover esta gravadora?</div>
+  <div class="modal-footer"><label for="m-rem-grav" class="btn btn-secondary">Não</label><button class="btn btn-primary" type="submit">Sim</button></div>
+  </form>
+</div></div>
+
+<!-- ================= MODAIS: EDITORA ================= -->
+<input type="checkbox" id="m-add-edit" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Cadastrar Editora</h2><label for="m-add-edit" class="modal-close">&times;</label></div>
+  <form>
+  <div class="modal-body"><div class="form-grid">
+    <div class="label-group full"><label for="ae-nome">Nome *</label><input id="ae-nome" name="nome" type="text" required></div>
+    <div class="label-group full"><label for="ae-contacto">Contacto</label><input id="ae-contacto" name="contacto" type="tel"></div>
+    <div class="label-group full"><label for="ae-email">E-mail</label><input id="ae-email" name="email" type="email"></div>
+    <div class="label-group full"><label for="ae-endereco">Endereço</label><input id="ae-endereco" name="endereco" type="text"></div>
+  </div></div>
+  <div class="modal-footer"><label for="m-add-edit" class="btn btn-secondary">Cancelar</label><button class="btn btn-primary" type="submit">Cadastrar</button></div>
+  </form>
+</div></div>
+
+<input type="checkbox" id="m-edit-edit" class="modal-toggle">
+<div class="modal-overlay"><div class="modal">
+  <div class="modal-header"><h2>Editar Editora</h2><label for="m-edit-edit" class="modal-close">&times;</label></div>
+  <form>
+  <input type="hidden" name="id">
+  <div class="modal-body"><div class="form-grid">
+    <div class="label-group full"><label for="ee-nome">Nome</label><input id="ee-nome" name="nome" type="text" required></div>
+    <div class="label-group full"><label for="ee-contacto">Contacto</label><input id="ee-contacto" name="contacto" type="tel"></div>
+    <div class="label-group full"><label for="ee-email">E-mail</label><input id="ee-email" name="email" type="email"></div>
+    <div class="label-group full"><label for="ee-endereco">Endereço</label><input id="ee-endereco" name="endereco" type="text"></div>
+  </div></div>
+  <div class="modal-footer"><label for="m-edit-edit" class="btn btn-secondary">Cancelar</label><button class="btn btn-primary" type="submit">Salvar Alterações</button></div>
+  </form>
+</div></div>
+
+<input type="checkbox" id="m-rem-edit" class="modal-toggle">
+<div class="modal-overlay"><div class="modal confirm">
+  <div class="modal-header"><h2>Confirmar remoção</h2><label for="m-rem-edit" class="modal-close">&times;</label></div>
+  <form>
+  <div class="modal-body">Tem certeza que deseja remover esta editora?</div>
+  <div class="modal-footer"><label for="m-rem-edit" class="btn btn-secondary">Não</label><button class="btn btn-primary" type="submit">Sim</button></div>
+  </form>
+</div></div>
+
+</body>
+</html>
