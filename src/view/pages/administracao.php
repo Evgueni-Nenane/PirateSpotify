@@ -98,7 +98,7 @@ $meuCodigo = 0;
 foreach ($lista as $u) {
     if ($u->getUser_name() === $utilizador->getUser_name()) $meuCodigo = $u->getCodigo();
 }
-$fotoLogado = $ctrl->buscarFoto($meuCodigo);
+$fotoLogado = $utilizador->getFoto();
 $niveis = $nivelDAO->listarNiveis();
 ?>
 <!DOCTYPE html>
@@ -143,8 +143,8 @@ $niveis = $nivelDAO->listarNiveis();
       </div>
       <div class="userdetails">
         <div class="userdetailstxt">
-          <?= htmlspecialchars($utilizador->getNome()) ?>
-          <p>Perfil</p>
+          <p><?= htmlspecialchars($utilizador->getNomeCompleto()) ?></p>
+          <p><?= htmlspecialchars($utilizador->getPerfil()->getNome()) ?></p>
         </div>
         <img src="<?= $fotoLogado ? '../resources/fotos/' . htmlspecialchars($fotoLogado) : '../resources/user.png' ?>" alt="Foto de Perfil">
       </div>

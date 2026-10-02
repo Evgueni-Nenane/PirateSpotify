@@ -15,49 +15,158 @@ $cantorDAO = new CantorDAO();
 $compositorDAO = new CompositorDAO();
 $instrDAO = new InstrumentoDAO();
 
-/* ---------- Cadastrar / Remover ---------- */
+/* ---------- Cadastrar / Atualizar / Remover (POST) ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $acao = $_POST['acao'] ?? '';
+    $tipo = $_POST['tipo'] ?? '';
 
-    if ($_POST['acao'] === 'cadastrar') {
-        $tipo = $_POST['tipo'];
-        $nome = trim($_POST['nome']);
-        $apelido = trim($_POST['apelido']);
-        $contacto = trim($_POST['contacto']);
-        $email = trim($_POST['email']);
+    if ($acao === 'cadastrar') {
+        $nome     = trim($_POST['nome'] ?? '');
+        $apelido  = trim($_POST['apelido'] ?? '');
+        $contacto = trim($_POST['contacto'] ?? '');
+        $email    = trim($_POST['email'] ?? '');
+        $id = -1;
 
-        if ($tipo === 'musico') {
-            $m = new Musico(0, $nome, $apelido, [], $contacto, $email);
-            $id = $musicoDAO->inserir($m);
+        if ($nome === '' || $apelido === '') {
+            $msg = 'Preencha pelo menos o nome e o apelido.';
+        } elseif ($tipo === 'musico') {
+            $id = $musicoDAO->inserir(new Musico(0, $nome, $apelido, [], $contacto, $email));
+            if ($id > 0) {
+                foreach (($_POST['instrumentos'] ?? []) as $cod) {
+                    $instrDAO->inserirRelacaoMusicoInstrumento($id, (int)$cod);
+                }
+            }
+            $msg = $id > 0 ? 'Artista cadastrado.' : 'Erro ao cadastrar.';
+        } elseif ($tipo === 'cantor') {
+            $id = $cantorDAO->inserir(new Cantor(0, $nome, $apelido, $contacto, $email));
+            $msg = $id > 0 ? 'Artista cadastrado.' : 'Erro ao cadastrar.';
+        } elseif ($tipo === 'compositor') {
+            $id = $compositorDAO->inserir(new Compositor(0, $nome, $apelido, $contacto, $email));
+            $msg = $id > 0 ? 'Artista cadastrado.' : 'Erro ao cadastrar.';
+        } else {
+            $msg = 'Escolha o tipo de artista.';
+        }
+    }
+
+    if ($acao === 'atualizar') {
+        $id       = (int)($_POST['id'] ?? 0);
+        $nome     = trim($_POST['nome'] ?? '');
+        $apelido  = trim($_POST['apelido'] ?? '');
+        $contacto = trim($_POST['contacto'] ?? '');
+        $email    = trim($_POST['email'] ?? '');
+
+        if ($id === 0 || $nome === '' || $apelido === '') {
+            $msg = 'Dados inválidos para atualizar.';
+        } elseif ($tipo === 'musico') {
+            $ok = $musicoDAO->atualizar(new Musico($id, $nome, $apelido, [], $contacto, $email));
+            $instrDAO->removerRelacoesPorMusico($id);
             foreach (($_POST['instrumentos'] ?? []) as $cod) {
                 $instrDAO->inserirRelacaoMusicoInstrumento($id, (int)$cod);
             }
+            $msg = $ok ? 'Músico atualizado.' : 'Sem alterações.';
         } elseif ($tipo === 'cantor') {
-            $id = $cantorDAO->inserir(new Cantor(0, $nome, $apelido, $contacto, $email));
+            $ok = $cantorDAO->atualizar(new Cantor($id, $nome, $apelido, $contacto, $email));
+            $msg = $ok ? 'Cantor atualizado.' : 'Sem alterações.';
+        } elseif ($tipo === 'compositor') {
+            $ok = $compositorDAO->atualizar(new Compositor($id, $nome, $apelido, $contacto, $email));
+            $msg = $ok ? 'Compositor atualizado.' : 'Sem alterações.';
         } else {
-            $id = $compositorDAO->inserir(new Compositor(0, $nome, $apelido, $contacto, $email));
+            $msg = 'Dados inválidos para atualizar.';
         }
-        $msg = $id > 0 ? 'Artista cadastrado.' : 'Erro ao cadastrar.';
     }
 
-    if ($_POST['acao'] === 'remover') {
-        [$tipo, $id] = explode(':', $_POST['sel'] ?? ':');
-        $id = (int)$id;
-        if ($tipo === 'musico')          $ok = $musicoDAO->remover($id);
-        elseif ($tipo === 'cantor')      $ok = $cantorDAO->remover($id);
-        elseif ($tipo === 'compositor')  $ok = $compositorDAO->remover($id);
+    if ($acao === 'remover') {
+        // Cada aba selecciona pelo seu próprio name; mantém-se o formato antigo "tipo:id".
+        $id = (int)($_POST['sel_' . $tipo] ?? 0);
+        if ($id === 0) {
+            [$tipoAntigo, $idAntigo] = array_pad(explode(':', $_POST['sel'] ?? ''), 2, '');
+            if ($tipo === '' && $tipoAntigo !== '') $tipo = $tipoAntigo;
+            $id = (int)$idAntigo;
+        }
+        if ($tipo === 'musico')          $ok = $id > 0 && $musicoDAO->remover($id);
+        elseif ($tipo === 'cantor')      $ok = $id > 0 && $cantorDAO->remover($id);
+        elseif ($tipo === 'compositor')  $ok = $id > 0 && $compositorDAO->remover($id);
         else                             $ok = false;
         $msg = $ok ? 'Artista removido.' : 'Não foi possível remover (seleccione um artista que não esteja em discos).';
     }
 
-    header('Location: artistas.php?msg=' . urlencode($msg));
+    // Volta para a mesma aba depois de gravar (padrão POST-Redirect-GET).
+    $aba = ['musico' => 'musicos', 'compositor' => 'compositores', 'cantor' => 'cantores'][$tipo] ?? 'musicos';
+    header('Location: artistas.php?tab=' . $aba . '&msg=' . urlencode($msg));
     exit;
 }
 
 $msg = $_GET['msg'] ?? '';
+
+/* ---------- Aba visível ---------- */
+$tab = $_GET['tab'] ?? 'musicos';
+if (!in_array($tab, ['musicos', 'compositores', 'cantores'], true)) $tab = 'musicos';
+
+/* ---------- Botão Editar (GET): carrega o artista seleccionado ---------- */
+$ed = null;             // artista a editar
+$edTipo = '';           // 'musico' | 'compositor' | 'cantor'
+$edInstrumentos = [];   // instrumentos do músico em edição
+if (($_GET['acao'] ?? '') === 'editar') {
+    $edTipo = $_GET['tipo'] ?? '';
+    $edId = (int)($_GET['sel_' . $edTipo] ?? 0);
+    if ($edId === 0) { // compatibilidade com o formato antigo "tipo:id"
+        [$tipoAntigo, $idAntigo] = array_pad(explode(':', $_GET['sel'] ?? ''), 2, '');
+        if ($edTipo === '' && $tipoAntigo !== '') $edTipo = $tipoAntigo;
+        $edId = (int)$idAntigo;
+    }
+    if ($edId > 0 && $edTipo === 'musico') {
+        $ed = $musicoDAO->buscarPorCodigo($edId);
+        if ($ed->getCodigoMusico()) {
+            foreach ($musicoDAO->buscarInstrumentosDoMusico($edId) as $i) $edInstrumentos[] = $i->getCodigo();
+            $tab = 'musicos';
+        } else {
+            $ed = null;
+        }
+    } elseif ($edId > 0 && $edTipo === 'compositor') {
+        $ed = $compositorDAO->buscarPorCodigo($edId);
+        if ($ed->getCodigoCompositor()) $tab = 'compositores';
+        else $ed = null;
+    } elseif ($edId > 0 && $edTipo === 'cantor') {
+        $ed = $cantorDAO->buscarPorCodigo($edId);
+        if ($ed->getCodigoCantor()) $tab = 'cantores';
+        else $ed = null;
+    } else {
+        $edTipo = '';
+    }
+    if (!$ed && $msg === '') $msg = 'Seleccione um artista.';
+}
 $musicos      = $musicoDAO->listarTodos();
 $cantores     = $cantorDAO->listarTodos();
 $compositores = $compositorDAO->listarTodos();
 $instrumentos = $instrDAO->listarTodos();
+
+/* ---------- Cabeçalho: foto e perfil do utilizador com sessão ---------- */
+$fotoLogado = $utilizador->getFoto();
+
+/* ---------- Campos do modal de edição (normaliza os 3 tipos de artista) ---------- */
+$edId = $edNome = $edApelido = $edContacto = $edEmail = '';
+if ($ed) {
+    if ($edTipo === 'musico') {
+        $edId = $ed->getCodigoMusico();
+        $edNome = $ed->getNomeMusico();
+        $edApelido = $ed->getApelidoMusico();
+        $edContacto = $ed->getContactoMusico();
+        $edEmail = $ed->getEmailMusico();
+    } elseif ($edTipo === 'compositor') {
+        $edId = $ed->getCodigoCompositor();
+        $edNome = $ed->getNomeCompositor();
+        $edApelido = $ed->getApelidoCompositor();
+        $edContacto = $ed->getContactoCompositor();
+        $edEmail = $ed->getEmailCompositor();
+    } else {
+        $edId = $ed->getCodigoCantor();
+        $edNome = $ed->getNomeCantor();
+        $edApelido = $ed->getApelidoCantor();
+        $edContacto = $ed->getContactoCantor();
+        $edEmail = $ed->getEmailCantor();
+    }
+}
+$edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'Cantor'][$edTipo] ?? 'Artista';
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -70,11 +179,12 @@ $instrumentos = $instrDAO->listarTodos();
 </head>
 <body>
 
-    <input type="radio" name="tabs" id="tab-musicos" class="tab-toggle" checked>
-    <input type="radio" name="tabs" id="tab-compositores" class="tab-toggle">
-    <input type="radio" name="tabs" id="tab-cantores" class="tab-toggle">
+    <input type="radio" name="tabs" id="tab-musicos" class="tab-toggle" <?= $tab === 'musicos' ? 'checked' : '' ?>>
+    <input type="radio" name="tabs" id="tab-compositores" class="tab-toggle" <?= $tab === 'compositores' ? 'checked' : '' ?>>
+    <input type="radio" name="tabs" id="tab-cantores" class="tab-toggle" <?= $tab === 'cantores' ? 'checked' : '' ?>>
 
     <input type="checkbox" id="modal-adicionar-artista-toggle" class="modal-toggle">
+    <input type="checkbox" id="modal-editar-artista-toggle" class="modal-toggle" <?= $ed ? 'checked' : '' ?>>
 
     <div class="app-container">
         <aside>
@@ -107,10 +217,10 @@ $instrumentos = $instrDAO->listarTodos();
                 </div>
                 <div class="userdetails">
                     <div class="userdetailstxt">
-                        <?= htmlspecialchars($utilizador->getNome()) ?>
-                        <p>Perfil</p>
+                        <?= htmlspecialchars($utilizador->getNomeCompleto()) ?>
+                        <p><?= htmlspecialchars($utilizador->getPerfil()->getNome()) ?></p>
                     </div>
-                    <img src="../resources/user.png" alt="Foto de Perfil">
+                    <img src="<?= $fotoLogado ? '../resources/fotos/' . htmlspecialchars($fotoLogado) : '../resources/user.png' ?>" alt="Foto de Perfil">
                 </div>
             </header>
 
@@ -128,8 +238,9 @@ $instrumentos = $instrDAO->listarTodos();
                         <div class="alert alert-ok"><?= htmlspecialchars($msg) ?></div>
                     <?php endif; ?>
 
-                    <form method="post">
-                        <!-- Músicos -->
+                    <!-- Músicos -->
+                    <form method="post" action="artistas.php">
+                        <input type="hidden" name="tipo" value="musico">
                         <div class="tab-content tab-content-musicos">
                             <div class="table-wrapper">
                                 <table>
@@ -140,7 +251,7 @@ $instrumentos = $instrDAO->listarTodos();
                                         <?php foreach ($musicos as $m): ?>
                                             <?php $nomes = array_map(fn($i) => $i->getNome(), $musicoDAO->buscarInstrumentosDoMusico($m->getCodigoMusico())); ?>
                                             <tr>
-                                                <td><input type="radio" name="sel" value="musico:<?= $m->getCodigoMusico() ?>"></td>
+                                                <td><input type="radio" name="sel_musico" value="<?= $m->getCodigoMusico() ?>"></td>
                                                 <td><?= htmlspecialchars($m->getNomeMusico() . ' ' . $m->getApelidoMusico()) ?></td>
                                                 <td><?= htmlspecialchars(implode(', ', $nomes)) ?></td>
                                                 <td><?= htmlspecialchars($m->getEmailMusico()) ?></td>
@@ -151,8 +262,17 @@ $instrumentos = $instrDAO->listarTodos();
                                 </table>
                             </div>
                         </div>
+                        <div class="table-actions">
+                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
+                                onclick="return confirm('Remover o músico seleccionado?')">Remover</button>
+                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
+                            <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
+                        </div>
+                    </form>
 
-                        <!-- Compositores -->
+                    <!-- Compositores -->
+                    <form method="post" action="artistas.php">
+                        <input type="hidden" name="tipo" value="compositor">
                         <div class="tab-content tab-content-compositores">
                             <div class="table-wrapper">
                                 <table>
@@ -162,7 +282,7 @@ $instrumentos = $instrDAO->listarTodos();
                                     <tbody>
                                         <?php foreach ($compositores as $c): ?>
                                             <tr>
-                                                <td><input type="radio" name="sel" value="compositor:<?= $c->getCodigoCompositor() ?>"></td>
+                                                <td><input type="radio" name="sel_compositor" value="<?= $c->getCodigoCompositor() ?>"></td>
                                                 <td><?= htmlspecialchars($c->getNomeCompositor() . ' ' . $c->getApelidoCompositor()) ?></td>
                                                 <td><?= htmlspecialchars($c->getEmailCompositor()) ?></td>
                                                 <td><?= htmlspecialchars($c->getContactoCompositor()) ?></td>
@@ -172,8 +292,17 @@ $instrumentos = $instrDAO->listarTodos();
                                 </table>
                             </div>
                         </div>
+                        <div class="table-actions">
+                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
+                                onclick="return confirm('Remover o compositor seleccionado?')">Remover</button>
+                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
+                            <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
+                        </div>
+                    </form>
 
-                        <!-- Cantores -->
+                    <!-- Cantores -->
+                    <form method="post" action="artistas.php">
+                        <input type="hidden" name="tipo" value="cantor">
                         <div class="tab-content tab-content-cantores">
                             <div class="table-wrapper">
                                 <table>
@@ -183,7 +312,7 @@ $instrumentos = $instrDAO->listarTodos();
                                     <tbody>
                                         <?php foreach ($cantores as $c): ?>
                                             <tr>
-                                                <td><input type="radio" name="sel" value="cantor:<?= $c->getCodigoCantor() ?>"></td>
+                                                <td><input type="radio" name="sel_cantor" value="<?= $c->getCodigoCantor() ?>"></td>
                                                 <td><?= htmlspecialchars($c->getNomeCantor() . ' ' . $c->getApelidoCantor()) ?></td>
                                                 <td><?= htmlspecialchars($c->getEmailCantor()) ?></td>
                                                 <td><?= htmlspecialchars($c->getContactoCantor()) ?></td>
@@ -195,7 +324,9 @@ $instrumentos = $instrDAO->listarTodos();
                         </div>
 
                         <div class="table-actions">
-                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover">Remover</button>
+                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
+                                onclick="return confirm('Remover o cantor seleccionado?')">Remover</button>
+                            <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
                             <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
                         </div>
                     </form>
@@ -211,7 +342,7 @@ $instrumentos = $instrDAO->listarTodos();
                 <h2>Cadastrar Artista</h2>
                 <label for="modal-adicionar-artista-toggle" class="modal-close">&times;</label>
             </div>
-            <form method="post">
+            <form method="post" action="artistas.php?tab=<?= $tab ?>">
                 <input type="hidden" name="acao" value="cadastrar">
                 <div class="modal-body">
                     <input type="radio" name="tipo" value="musico" id="add-tipo-musico" class="tipo-toggle" checked>
@@ -263,6 +394,62 @@ $instrumentos = $instrDAO->listarTodos();
                 <div class="modal-footer">
                     <label for="modal-adicionar-artista-toggle" class="btn btn-secondary">Cancelar</label>
                     <button class="btn btn-primary" type="submit">Cadastrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDITAR ARTISTA (abre pré-preenchido pelo botão "Editar") -->
+    <div class="modal-overlay modal-editar-artista">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h2>Editar <?= $edTitulo ?></h2>
+                <label for="modal-editar-artista-toggle" class="modal-close">&times;</label>
+            </div>
+            <form method="post" action="artistas.php?tab=<?= $tab ?>">
+                <input type="hidden" name="acao" value="atualizar">
+                <input type="hidden" name="tipo" value="<?= $ed ? htmlspecialchars($edTipo) : 'musico' ?>">
+                <input type="hidden" name="id" value="<?= $ed ? $edId : '' ?>">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="label-group">
+                            <label for="ed-nome">Nome</label>
+                            <input type="text" id="ed-nome" name="nome" required value="<?= htmlspecialchars($edNome) ?>">
+                        </div>
+                        <div class="label-group">
+                            <label for="ed-apelido">Apelido</label>
+                            <input type="text" id="ed-apelido" name="apelido" required value="<?= htmlspecialchars($edApelido) ?>">
+                        </div>
+
+                        <!-- Só para Músico (os outros tipos não têm instrumentos) -->
+                        <?php if ($edTipo !== 'compositor' && $edTipo !== 'cantor'): ?>
+                        <div class="instrumento-group sempre">
+                            <label>Instrumentos Musicais</label>
+                            <div class="list-box">
+                                <?php foreach ($instrumentos as $i): ?>
+                                    <div class="list-item">
+                                        <input type="checkbox" name="instrumentos[]" value="<?= $i->getCodigo() ?>" id="edinst<?= $i->getCodigo() ?>"
+                                            <?= in_array($i->getCodigo(), $edInstrumentos) ? 'checked' : '' ?>>
+                                        <label for="edinst<?= $i->getCodigo() ?>"><?= htmlspecialchars($i->getNome()) ?></label>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="label-group form-grid-full">
+                            <label for="ed-contacto">Contacto</label>
+                            <input type="text" id="ed-contacto" name="contacto" value="<?= htmlspecialchars($edContacto) ?>">
+                        </div>
+                        <div class="label-group form-grid-full">
+                            <label for="ed-email">E-mail</label>
+                            <input type="email" id="ed-email" name="email" value="<?= htmlspecialchars($edEmail) ?>">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <label for="modal-editar-artista-toggle" class="btn btn-secondary">Cancelar</label>
+                    <button class="btn btn-primary" type="submit">Guardar</button>
                 </div>
             </form>
         </div>

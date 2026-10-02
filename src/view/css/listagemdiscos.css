@@ -340,7 +340,8 @@
         /* Mostra o modal quando o checkbox correspondente está marcado */
         #modal-detalhes-toggle:checked ~ .modal-overlay.modal-detalhes,
         #modal-editar-disco-toggle:checked ~ .modal-overlay.modal-editar-disco,
-        #modal-adicionar-faixa-toggle:checked ~ .modal-overlay.modal-adicionar-faixa {
+        #modal-adicionar-faixa-toggle:checked ~ .modal-overlay.modal-adicionar-faixa,
+        #modal-editar-faixa-toggle:checked ~ .modal-overlay.modal-editar-faixa {
             display: flex;
         }
 

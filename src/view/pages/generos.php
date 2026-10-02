@@ -78,10 +78,10 @@ $generos = $generoController->listarGeneros();
       </div>
       <div class="userdetails">
         <div class="userdetailstxt">
-          <p><?= htmlspecialchars($utilizador->getNome()) ?></p>
+          <p><?= htmlspecialchars($utilizador->getNomeCompleto()) ?></p>
           <p><?= htmlspecialchars($utilizador->getPerfil()->getNome()) ?></p>
         </div>
-        <img src="../resources/user.png" alt="Foto de Perfil">
+        <img src="<?= ($utilizador->getFoto() ? '../resources/fotos/' . htmlspecialchars($utilizador->getFoto()) : '../resources/user.png') ?>" alt="Foto de Perfil">
       </div>
     </header>
 

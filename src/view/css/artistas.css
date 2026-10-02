@@ -223,17 +223,18 @@
             display: none;
         }
 
-        #tab-musicos:checked ~ .card .tabs .tab-label[for="tab-musicos"],
-        #tab-compositores:checked ~ .card .tabs .tab-label[for="tab-compositores"],
-        #tab-cantores:checked ~ .card .tabs .tab-label[for="tab-cantores"] {
+        /* Os rádios .tab-toggle são irmãos directos de .app-container; o "~" atravessa-o. */
+        #tab-musicos:checked ~ .app-container .tabs .tab-label[for="tab-musicos"],
+        #tab-compositores:checked ~ .app-container .tabs .tab-label[for="tab-compositores"],
+        #tab-cantores:checked ~ .app-container .tabs .tab-label[for="tab-cantores"] {
             background-color: #ffffff;
             color: #1e1e1e;
             box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
         }
 
-        #tab-musicos:checked ~ .card .tab-content-musicos,
-        #tab-compositores:checked ~ .card .tab-content-compositores,
-        #tab-cantores:checked ~ .card .tab-content-cantores {
+        #tab-musicos:checked ~ .app-container .tab-content-musicos,
+        #tab-compositores:checked ~ .app-container .tab-content-compositores,
+        #tab-cantores:checked ~ .app-container .tab-content-cantores {
             display: block;
         }
 
@@ -374,7 +375,8 @@
 
         /* Mostra o modal quando o checkbox correspondente está marcado */
         #modal-editar-artista-toggle:checked ~ .modal-overlay.modal-editar-artista,
-        #modal-adicionar-artista-toggle:checked ~ .modal-overlay.modal-adicionar-artista {
+        #modal-adicionar-artista-toggle:checked ~ .modal-overlay.modal-adicionar-artista,
+        #modal-editar-artista-toggle:checked ~ .modal-overlay.modal-editar-artista {
             display: flex;
         }
 
@@ -599,6 +601,11 @@
             height: 16px;
             accent-color: #1e1e1e;
             cursor: pointer;
+        }
+
+        /* Caixa de instrumentos sempre visível (modal de edição de músico) */
+        .modal-editar-artista .instrumento-group.sempre {
+            display: flex;
         }
 
         .instrumento-group .list-item label {

@@ -24,6 +24,9 @@ $cantorDAO     = new CantorDAO();
 
 $msg = '';
 $det = null;   // disco aberto em "Ver Detalhes"
+$edF = null;    // faixa a editar ("Editar Faixa" dentro de Ver Detalhes)
+$edFDisco = 0;  // disco da faixa em edição
+$edFComp = $edFMus = $edFCant = [];
 
 /* ---------- Acções (POST) ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -80,6 +83,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($acao === 'atualizarfaixa') {
+        // Edita nome/artista/duração e sincroniza os participantes da faixa.
+        $id = (int)$_POST['id'];
+        $f  = (int)$_POST['id_faixa'];
+        $dur = sprintf('%02d:%02d', (int)$_POST['min'], (int)$_POST['seg']);
+        $faixaDAO->atualizar(
+            new Faixa(trim($_POST['nome']), trim($_POST['artista']), $dur, (int)$_POST['num']),
+            $f
+        );
+        $novosComp = array_map('intval', $_POST['compositores'] ?? []);
+        $novosMus  = array_map('intval', $_POST['musicos'] ?? []);
+        $novosCant = array_map('intval', $_POST['cantores'] ?? []);
+        $atualComp = $atualMus = $atualCant = [];
+        foreach ($faixaDAO->listarCompositoresPorFaixa($f) as $c) $atualComp[] = $c->getCodigoCompositor();
+        foreach ($faixaDAO->listarMusicosPorFaixa($f) as $m)      $atualMus[]  = $m->getCodigoMusico();
+        foreach ($faixaDAO->listarCantoresPorFaixa($f) as $c)     $atualCant[] = $c->getCodigoCantor();
+        foreach (array_diff($atualComp, $novosComp) as $c) $faixaDAO->removerCompositor($f, $c);
+        foreach (array_diff($atualMus, $novosMus) as $m)   $faixaDAO->removerMusico($f, $m);
+        foreach (array_diff($atualCant, $novosCant) as $c) $faixaDAO->removerCantor($f, $c);
+        foreach (array_diff($novosComp, $atualComp) as $c) $faixaDAO->InserRelacaoCompositor($f, $c);
+        foreach (array_diff($novosMus, $atualMus) as $m)   $faixaDAO->InserRelacaoMusico($f, $m);
+        foreach (array_diff($novosCant, $atualCant) as $c) $faixaDAO->InserRelacaoCantor($f, $c);
+        $msg = 'Faixa atualizada.';
+        $det = $discoDAO->buscarPorCodigo($id);
+    }
+
     if ($acao === 'removerfaixa') {
         $id = (int)$_POST['id'];
         $f  = (int)($_POST['sel_faixa'] ?? 0);
@@ -96,28 +125,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/* ---------- Botões Editar / Adicionar Faixas / Ver Detalhes (GET) ---------- */
+/* ---------- Botões Editar / Adicionar Faixas / Ver Detalhes / Editar Faixa (GET) ---------- */
 $ed = null;   // disco a editar
 $fx = null;   // disco a que se vai juntar uma faixa
 $acaoGet = $_GET['acao'] ?? '';
 if ($acaoGet !== '') {
     $d = $discoDAO->buscarPorCodigo((int)($_GET['sel'] ?? 0));
-    if (!$d)                       $msg = 'Seleccione um disco.';
-    elseif ($acaoGet === 'editar')   $ed  = $d;
-    elseif ($acaoGet === 'faixas')   $fx  = $d;
-    elseif ($acaoGet === 'detalhes') $det = $d;
+    if ($acaoGet === 'editarfaixa') {
+        // Editar Faixa: a faixa vem de sel_faixa; o disco vem de id (ou deduz-se da faixa).
+        $edFDisco = (int)($_GET['id'] ?? 0);
+        $fId = (int)($_GET['sel_faixa'] ?? 0);
+        if ($fId > 0) {
+            $edF = $faixaDAO->listarFaixaPorCodigo($fId);
+            if ($edFDisco === 0) $edFDisco = discoDaFaixa($fId);
+            foreach ($faixaDAO->listarCompositoresPorFaixa($fId) as $c) $edFComp[] = $c->getCodigoCompositor();
+            foreach ($faixaDAO->listarMusicosPorFaixa($fId) as $m)      $edFMus[]  = $m->getCodigoMusico();
+            foreach ($faixaDAO->listarCantoresPorFaixa($fId) as $c)     $edFCant[] = $c->getCodigoCantor();
+        }
+        // Reabre os Detalhes no mesmo disco para dar contexto ao editar.
+        $det = $edFDisco > 0 ? $discoDAO->buscarPorCodigo($edFDisco) : null;
+        if (!$edF && $msg === '') $msg = 'Seleccione uma faixa.';
+    } elseif (!$d) {
+        if ($msg === '') $msg = 'Seleccione um disco.';
+    } elseif ($acaoGet === 'editar') {
+        $ed  = $d;
+    } elseif ($acaoGet === 'faixas') {
+        $fx  = $d;
+    } elseif ($acaoGet === 'detalhes') {
+        $det = $d;
+    }
 }
 
 $discos = $discoDAO->listarTodos();   // depois das acções, para vir actualizado
+$todosGeneros = $generoDAO->listarTodos();
 
 /* ---------- Cabeçalho: foto do utilizador com sessão ---------- */
 $utilizadorController = new UtilizadorController();
-$fotoLogado = null;
-foreach ($utilizadorController->listarUtilizador() as $u) {
-    if ($u->getUser_name() === $utilizador->getUser_name()) {
-        $fotoLogado = $utilizadorController->buscarFoto($u->getCodigo());
-    }
-}
+$fotoLogado = $utilizador->getFoto();
 
 function h($v)
 {
@@ -145,6 +189,7 @@ function nomes($lista, $g1, $g2)
 
     <input type="checkbox" id="modal-detalhes-toggle" class="modal-toggle" <?= $det ? 'checked' : '' ?>>
     <input type="checkbox" id="modal-editar-disco-toggle" class="modal-toggle" <?= $ed ? 'checked' : '' ?>>
+    <input type="checkbox" id="modal-editar-faixa-toggle" class="modal-toggle" <?= $edF ? 'checked' : '' ?>>
     <input type="checkbox" id="modal-adicionar-faixa-toggle" class="modal-toggle" <?= $fx ? 'checked' : '' ?>>
 
     <div class="app-container">
@@ -180,8 +225,8 @@ function nomes($lista, $g1, $g2)
                 </div>
                 <div class="userdetails">
                     <div class="userdetailstxt">
-                        <?= h($utilizador->getNome()) ?>
-                        <p>Perfil</p>
+                        <?= h($utilizador->getNomeCompleto()) ?>
+                        <p><?= h($utilizador->getPerfil()->getNome()) ?></p>
                     </div>
                     <img src="<?= $fotoLogado ? '../resources/fotos/' . h($fotoLogado) : '../resources/user.png' ?>" alt="Foto de Perfil">
                 </div>
@@ -250,8 +295,8 @@ function nomes($lista, $g1, $g2)
                 $dFaixas  = $faixaDAO->listarPorCodigo($dId);
             }
             ?>
-            <form method="post" action="listagemdiscos.php">
-                <input type="hidden" name="acao" value="removerfaixa">
+            <form method="post" action="listagemdiscos.php" id="form-detalhes">
+                <input type="hidden" name="acao" value="removerfaixa" id="acao-detalhes">
                 <input type="hidden" name="id" value="<?= $det ? $dId : '' ?>">
                 <div class="modal-body">
                     <div class="detail-section">
@@ -305,7 +350,10 @@ function nomes($lista, $g1, $g2)
                 </div>
                 <div class="modal-footer">
                     <label for="modal-detalhes-toggle" class="btn btn-secondary">Fechar</label>
-                    <button class="btn btn-primary" type="submit" onclick="return confirm('Remover a faixa seleccionada?')">Remover Faixa</button>
+                    <button class="btn btn-secondary" type="submit" name="acao" value="editarfaixa" formmethod="get"
+                        onclick="return !!document.querySelector('#form-detalhes input[name=sel_faixa]:checked') || (alert('Seleccione uma faixa.'), false)">Editar Faixa</button>
+                    <button class="btn btn-primary" type="submit"
+                        onclick="return !!document.querySelector('#form-detalhes input[name=sel_faixa]:checked') || (alert('Seleccione uma faixa.'), false) ? confirm('Remover a faixa seleccionada?') : false">Remover Faixa</button>
                 </div>
             </form>
         </div>
@@ -358,6 +406,87 @@ function nomes($lista, $g1, $g2)
                 <div class="modal-footer">
                     <label for="modal-editar-disco-toggle" class="btn btn-secondary">Cancelar</label>
                     <button class="btn btn-primary" type="submit">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============ MODAL: EDITAR FAIXA ============ -->
+    <div class="modal-overlay modal-editar-faixa">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Editar Faixa</h2>
+                <label for="modal-editar-faixa-toggle" class="modal-close">&times;</label>
+            </div>
+            <?php
+            $edFMin = $edFSeg = 0;   // duração "mm:ss" partida em dois campos
+            if ($edF) {
+                [$edFMin, $edFSeg] = array_pad(array_map('intval', explode(':', (string)$edF->getDuracao())), 2, 0);
+            }
+            ?>
+            <form method="post" action="listagemdiscos.php">
+                <input type="hidden" name="acao" value="atualizarfaixa">
+                <input type="hidden" name="id" value="<?= $edF ? $edFDisco : '' ?>">
+                <input type="hidden" name="id_faixa" value="<?= $edF ? $edF->getIdFaixa() : '' ?>">
+                <input type="hidden" name="num" value="<?= $edF ? $edF->getNumeroFaixa() : '' ?>">
+                <div class="modal-body">
+                    <div class="detail-section">
+                        <h4>Informações da Faixa</h4>
+                        <div class="form-grid">
+                            <div class="label-group">
+                                <label for="edfaixa-nome">Nome da Faixa</label>
+                                <input type="text" id="edfaixa-nome" name="nome" required value="<?= $edF ? h($edF->getNomeFaixa()) : '' ?>">
+                            </div>
+                            <div class="label-group">
+                                <label for="edfaixa-artista">Artista Principal</label>
+                                <input type="text" id="edfaixa-artista" name="artista" required value="<?= $edF ? h($edF->getArtistaPrincipal()) : '' ?>">
+                            </div>
+                            <div class="label-group">
+                                <label>Duração (mm:ss)</label>
+                                <div style="display:flex; gap:0.5rem; align-items:center;">
+                                    <input type="number" name="min" min="0" max="99" value="<?= $edFMin ?>" style="width:70px; text-align:center;">
+                                    <span>:</span>
+                                    <input type="number" name="seg" min="0" max="59" value="<?= $edFSeg ?>" style="width:70px; text-align:center;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Participantes do disco</h4>
+                        <div class="participant-grid">
+                            <div class="participant-col">
+                                <h4>Compositores</h4>
+                                <div class="list-box" style="max-height:120px;">
+                                    <?php if ($edFDisco): foreach ($compositorDAO->listarPorCodigo($edFDisco) as $c): ?>
+                                        <div class="list-item"><input type="checkbox" name="compositores[]" id="efc<?= $c->getCodigoCompositor() ?>" value="<?= $c->getCodigoCompositor() ?>" <?= in_array($c->getCodigoCompositor(), $edFComp) ? 'checked' : '' ?>><label for="efc<?= $c->getCodigoCompositor() ?>"><?= h($c->getNomeCompositor() . ' ' . $c->getApelidoCompositor()) ?></label></div>
+                                    <?php endforeach;
+                                    endif; ?>
+                                </div>
+                            </div>
+                            <div class="participant-col">
+                                <h4>Músicos</h4>
+                                <div class="list-box" style="max-height:120px;">
+                                    <?php if ($edFDisco): foreach ($musicoDAO->listarPorCodigo($edFDisco) as $m): ?>
+                                        <div class="list-item"><input type="checkbox" name="musicos[]" id="efm<?= $m->getCodigoMusico() ?>" value="<?= $m->getCodigoMusico() ?>" <?= in_array($m->getCodigoMusico(), $edFMus) ? 'checked' : '' ?>><label for="efm<?= $m->getCodigoMusico() ?>"><?= h($m->getNomeMusico() . ' ' . $m->getApelidoMusico()) ?></label></div>
+                                    <?php endforeach;
+                                    endif; ?>
+                                </div>
+                            </div>
+                            <div class="participant-col">
+                                <h4>Cantores</h4>
+                                <div class="list-box" style="max-height:120px;">
+                                    <?php if ($edFDisco): foreach ($cantorDAO->listarPorCodigo($edFDisco) as $c): ?>
+                                        <div class="list-item"><input type="checkbox" name="cantores[]" id="efv<?= $c->getCodigoCantor() ?>" value="<?= $c->getCodigoCantor() ?>" <?= in_array($c->getCodigoCantor(), $edFCant) ? 'checked' : '' ?>><label for="efv<?= $c->getCodigoCantor() ?>"><?= h($c->getNomeCantor() . ' ' . $c->getApelidoCantor()) ?></label></div>
+                                    <?php endforeach;
+                                    endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <label for="modal-editar-faixa-toggle" class="btn btn-secondary">Cancelar</label>
+                    <button class="btn btn-primary" type="submit">Guardar</button>
                 </div>
             </form>
         </div>
