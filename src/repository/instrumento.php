@@ -7,19 +7,22 @@ class InstrumentoDAO
     public function inserir($instrumento)
     {
         $conn = connection::connectionDB();
-        $sql = "INSERT INTO Instrumento (Codigo, NomeInstrumento) VALUES (?, ?)";
+        // "Codigo" é a chave primária AUTO_INCREMENT: não é inserida.
+        $sql = "INSERT INTO Instrumento (NomeInstrumento) VALUES (?)";
         $ps = $conn->prepare($sql);
 
-        $codigo = $instrumento->getCodigo();
         $nome = $instrumento->getNome();
 
-        $ps->bind_param("is", $codigo, $nome);
+        $ps->bind_param("s", $nome);
 
         try {
-            return $ps->execute();
+            if ($ps->execute()) {
+                return $conn->insert_id;
+            }
         } catch (mysqli_sql_exception $e) {
-            return false;
+            return -1;
         }
+        return -1;
     }
 
     public function listarTodos()
@@ -40,14 +43,14 @@ class InstrumentoDAO
         return $instrumentos;
     }
 
-    public function listarPorCodigo($codigoInstrumento)
+    public function listarPorMusico($codigoMusico)
     {
         $instrumento = new Instrumento();
         $conn = connection::connectionDB();
         $sql = "SELECT i.* FROM Instrumento i INNER JOIN Musico_Instrumento mi " .
             "ON i.Codigo = mi.Codigo_Instr WHERE mi.Codigo_Musico = ?";
         $ps = $conn->prepare($sql);
-        $ps->bind_param("i", $codigoInstrumento);
+        $ps->bind_param("i", $codigoMusico);
         $ps->execute();
         $row = $ps->get_result()->fetch_assoc();
 

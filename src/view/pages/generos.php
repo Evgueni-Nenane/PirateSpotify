@@ -1,12 +1,40 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/genero.php';
 require_once __DIR__ . '/../../controller/loginController.php';
-
+require_once __DIR__ . '/../../controller/generoController.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) { header('Location: Login.php'); exit; }
-$username = $utilizador->getUser_name();
 
+$generoController = new GeneroController();
+$msg = '';
+$erro = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $acao = $_POST['acao'] ?? '';
+
+    if ($acao === 'salvar') {
+        $nome = trim($_POST['nome'] ?? '');
+        if ($nome === '') {
+            $erro = 'O nome do género é obrigatório.';
+        } else {
+            $novo = $generoController->adicionarGenero(new Genero(null, $nome));
+            $msg = $novo > 0 ? 'Género adicionado com sucesso.' : 'Erro ao adicionar (já existe?).';
+        }
+    } elseif ($acao === 'remover') {
+        $id = (int)($_POST['sel'] ?? 0);
+        if ($id === 0) {
+            $erro = 'Seleccione um género.';
+        } else {
+            $msg = $generoController->removerGenero($id)
+                ? 'Género removido.'
+                : 'Não foi possível remover (o género está associado a discos).';
+        }
+    }
+}
+
+$generos = $generoController->listarGeneros();
 ?>
 
 <!DOCTYPE html>
@@ -49,7 +77,10 @@ $username = $utilizador->getUser_name();
         <p>Gestão de géneros musicais</p>
       </div>
       <div class="userdetails">
-        <div class="userdetailstxt"><!-- PHP: nome do utilizador autenticado --> <?= htmlspecialchars($utilizador->getNome()) ?><!-- PHP: perfil do utilizador --><p>Perfil</p></div>
+        <div class="userdetailstxt">
+          <p><?= htmlspecialchars($utilizador->getNome()) ?></p>
+          <p><?= htmlspecialchars($utilizador->getPerfil()->getNome()) ?></p>
+        </div>
         <img src="../resources/user.png" alt="Foto de Perfil">
       </div>
     </header>
@@ -68,27 +99,40 @@ $username = $utilizador->getUser_name();
           <input type="search" class="search-input" placeholder="Pesquisar género...">
         </div>
 
+        <?php if ($msg): ?><div class="alert alert-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
+        <?php if ($erro): ?><div class="alert alert-erro"><?= htmlspecialchars($erro) ?></div><?php endif; ?>
+
         <!-- ===== LISTA ===== -->
         <section class="panel panel-lista">
-          <div class="table-wrapper">
-            <table>
-              <thead><tr><th class="col-sel"></th><th>Código</th><th>Nome do Género</th></tr></thead>
-              <tbody>
-                <!-- PHP: repetir por linha (géneros: GeneroDAO::listarTodos) -->
-                <tr><td><input type="radio" name="sel-genero" value="ID"></td><td>Código</td><td>Nome do Género</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="table-actions">
-            <label for="m-rem-gen" class="btn btn-secondary btn-sm">Remover</label>
-            <label for="tab-cad" class="btn btn-primary btn-sm">Adicionar</label>
-          </div>
+          <form method="post" id="form-gen">
+            <div class="table-wrapper">
+              <table>
+                <thead><tr><th class="col-sel"></th><th>Código</th><th>Nome do Género</th></tr></thead>
+                <tbody>
+                  <?php foreach ($generos as $g): ?>
+                    <tr>
+                      <td><input type="radio" name="sel" value="<?= $g->getCodigoGenero() ?>"></td>
+                      <td><?= $g->getCodigoGenero() ?></td>
+                      <td><?= htmlspecialchars($g->getNomeGenero()) ?></td>
+                    </tr>
+                  <?php endforeach; ?>
+                  <?php if (!$generos): ?>
+                    <tr><td colspan="3">Nenhum género cadastrado.</td></tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
+            <div class="table-actions">
+              <label for="m-rem-gen" class="btn btn-secondary btn-sm">Remover</label>
+              <label for="tab-cad" class="btn btn-primary btn-sm">Adicionar</label>
+            </div>
+          </form>
         </section>
 
         <!-- ===== CADASTRAR ===== -->
         <section class="panel panel-cad">
-          <!-- PHP: action para GeneroController::adicionarGenero() -->
-          <form method="post">
+          <form method="post" action="generos.php">
+            <input type="hidden" name="acao" value="salvar">
             <div class="form-grid">
               <div class="label-group full">
                 <label for="cad-nome">Nome do Género *</label>
@@ -96,7 +140,7 @@ $username = $utilizador->getUser_name();
               </div>
             </div>
             <div class="table-actions">
-              <button class="btn btn-primary" type="submit" name="acao" value="salvar">Salvar Género</button>
+              <button class="btn btn-primary" type="submit">Salvar Género</button>
             </div>
           </form>
         </section>
@@ -109,14 +153,11 @@ $username = $utilizador->getUser_name();
 <input type="checkbox" id="m-rem-gen" class="modal-toggle">
 <div class="modal-overlay"><div class="modal confirm">
   <div class="modal-header"><h2>Confirmar remoção</h2><label for="m-rem-gen" class="modal-close">&times;</label></div>
-  <form method="post">
-    <input type="hidden" name="id">
-    <div class="modal-body">Tem certeza que deseja remover este género? Géneros associados a discos não podem ser removidos.</div>
-    <div class="modal-footer">
-      <label for="m-rem-gen" class="btn btn-secondary">Não</label>
-      <button class="btn btn-primary" type="submit" name="acao" value="remover">Sim</button>
-    </div>
-  </form>
+  <div class="modal-body">Tem certeza que deseja remover este género? Géneros associados a discos não podem ser removidos.</div>
+  <div class="modal-footer">
+    <label for="m-rem-gen" class="btn btn-secondary">Não</label>
+    <button class="btn btn-primary" type="submit" form="form-gen" name="acao" value="remover">Sim</button>
+  </div>
 </div></div>
 
 </body>

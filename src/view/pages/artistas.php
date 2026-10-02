@@ -27,7 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($tipo === 'musico') {
             $m = new Musico(0, $nome, $apelido, [], $contacto, $email);
-            $m->setNomeMusico('');
             $id = $musicoDAO->inserir($m);
             foreach (($_POST['instrumentos'] ?? []) as $cod) {
                 $instrDAO->inserirRelacaoMusicoInstrumento($id, (int)$cod);

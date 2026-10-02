@@ -72,16 +72,17 @@ class EditoraDAO
     public function atualizar($editora)
     {
         $conn = connection::connectionDB();
-        $sql = "UPDATE Editora SET Email_Editora = ?, Contacto_Editora = ?, Endereco = ? "
+        $sql = "UPDATE Editora SET Nome_Editora = ?, Email_Editora = ?, Contacto_Editora = ?, Endereco = ? "
             . "WHERE Codigo_Editora = ?";
         $ps = $conn->prepare($sql);
 
+        $nome = $editora->getNomeEditora();
         $email = $editora->getEmailEditora();
         $contacto = $editora->getContactoEditora();
         $endereco = $editora->getEndereco();
         $codigo = $editora->getCodigoEditora();
 
-        $ps->bind_param("sssi", $email, $contacto, $endereco, $codigo);
+        $ps->bind_param("ssssi", $nome, $email, $contacto, $endereco, $codigo);
         return $ps->execute();
     }
 

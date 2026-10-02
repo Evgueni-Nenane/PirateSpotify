@@ -1,6 +1,6 @@
 <?php 
 
-require_once __DIR__ . '/../repository/edicao.php';
+require_once __DIR__ . '/../repository/editora.php';
 require_once __DIR__ . '/../model/editora.php';
 
 class EditoraController {

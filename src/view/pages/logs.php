@@ -1,3 +1,26 @@
+<?php
+require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../controller/loginController.php';
+require_once __DIR__ . '/../../controller/logsController.php';
+
+$utilizador = Sessao::getUtilizadorLogado();
+if (!$utilizador) { header('Location: Login.php'); exit; }
+
+$logsController = new LogsController();
+$logs = $logsController->listarLogs();
+
+// Pesquisa simples (filtra em memória pelo texto introduzido)
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+    $logs = array_filter($logs, function ($l) use ($q) {
+        $alvo = strtolower(
+            $l->getCodigo() . ' ' . $l->getNome() . ' ' . $l->getApelido() . ' ' .
+            $l->getEmail() . ' ' . $l->getPerfil() . ' ' . $l->getAccao() . ' ' . $l->getDataHora()
+        );
+        return str_contains($alvo, strtolower($q));
+    });
+}
+?>
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -38,7 +61,10 @@
         <p>Auditoria do sistema</p>
       </div>
       <div class="userdetails">
-        <div class="userdetailstxt"><!-- PHP: nome do utilizador autenticado --><p>Nome Apelido</p><!-- PHP: perfil do utilizador --><p>Perfil</p></div>
+        <div class="userdetailstxt">
+          <p><?= htmlspecialchars($utilizador->getNome()) ?></p>
+          <p><?= htmlspecialchars($utilizador->getPerfil()->getNome()) ?></p>
+        </div>
         <img src="../resources/user.png" alt="Foto de Perfil">
       </div>
     </header>
@@ -47,14 +73,25 @@
       <div class="card">
         <div class="card-header">
           <h3>Logs do Sistema</h3>
-          <form method="get"><input type="search" name="q" class="search-input" placeholder="Pesquisar nos logs..."></form>
+          <form method="get"><input type="search" name="q" class="search-input" placeholder="Pesquisar nos logs..." value="<?= htmlspecialchars($q) ?>"></form>
         </div>
         <div class="table-wrapper">
           <table>
             <thead><tr><th>ID</th><th>Nome Completo</th><th>E-mail Corporativo</th><th>Perfil</th><th>Acção</th><th>Data</th></tr></thead>
             <tbody>
-              <!-- PHP: repetir por linha -->
-              <tr><td>ID</td><td>Nome Completo</td><td>E-mail</td><td>Perfil</td><td>Acção</td><td>Data</td></tr>
+              <?php foreach ($logs as $l): ?>
+                <tr>
+                  <td><?= $l->getCodigo() ?></td>
+                  <td><?= htmlspecialchars(trim($l->getNome() . ' ' . $l->getApelido())) ?></td>
+                  <td><?= htmlspecialchars($l->getEmail()) ?></td>
+                  <td><?= htmlspecialchars($l->getPerfil()) ?></td>
+                  <td><?= htmlspecialchars($l->getAccao()) ?></td>
+                  <td><?= htmlspecialchars($l->getDataHora()) ?></td>
+                </tr>
+              <?php endforeach; ?>
+              <?php if (!$logs): ?>
+                <tr><td colspan="6">Nenhum registo encontrado.</td></tr>
+              <?php endif; ?>
             </tbody>
           </table>
         </div>

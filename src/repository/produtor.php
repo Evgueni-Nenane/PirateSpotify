@@ -93,14 +93,16 @@ class ProdutorDAO
     public function atualizar($produtor)
     {
         $conn = connection::connectionDB();
-        $sql = "UPDATE Produtor SET Email_Prod = ?, Contacto_Prod = ? WHERE Codigo_Prod = ?";
+        $sql = "UPDATE Produtor SET Nome_Prod = ?, Apelido_Produtor = ?, Email_Prod = ?, Contacto_Prod = ? WHERE Codigo_Prod = ?";
         $ps = $conn->prepare($sql);
 
+        $nome = $produtor->getNomeProdutor();
+        $apelido = $produtor->getApelidoProdutor();
         $email = $produtor->getEmailProdutor();
         $contacto = $produtor->getContactoProdutor();
         $codigo = $produtor->getCodigoProdutor();
 
-        $ps->bind_param("ssi", $email, $contacto, $codigo);
+        $ps->bind_param("ssssi", $nome, $apelido, $email, $contacto, $codigo);
         $ps->execute();
         return $ps->affected_rows > 0;
     }

@@ -351,3 +351,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
+
+---
+
+## 7. Correções aplicadas (revisão final)
+
+Esta secção registra o que foi corrigido/ligado para o sistema ficar funcional.
+Serve de *changelog* face às secções anteriores (que descrevem o estado antigo).
+
+### 7.1 Bugs de backend corrigidos
+
+| Ficheiro | Problema | Correção |
+|---|---|---|
+| `repository/disco.php` | `DiscoDAO::inserir()` chamava `$disco->getGenero()`, método **inexistente** em `DiscoCompacto` → erro fatal ao registar disco | Insere apenas `Titulo, Preco, Ano_Edicao`; o género é gravado na relação `Disco_Genero` (como já fazia o resto da app) |
+| `repository/musico.php` | `montarMusico()` escrevia o **nome artístico por cima do nome real** (`setNomeMusico`); `atualizar()` chamava `getNomeArtistico()` inexistente | O modelo `Musico` ganhou `$nomeArtistico`, `getNomeArtistico()`/`setNomeArtistico()`; o DAO usa-os |
+| `repository/instrumento.php` | `inserir()` inseria a PK `Codigo` (AUTO_INCREMENT) à mão | Insere só `NomeInstrumento` e devolve `insert_id` |
+| `repository/instrumento.php` | `listarPorCodigo()` filtra na verdade pelo **código do músico** (`Musico_Instrumento`) — nome enganador | Renomeado para **`listarPorMusico()`** |
+| `controller/instrumentoController.php` | `buscarPorCodigo()` chamava o método anterior | Renomeado para **`buscarPorMusico()`** |
+| `controller/editoraController.php` | Fazia `require` de `repository/edicao.php` mas instanciava `EditoraDAO` | `require` corrigido para `repository/editora.php` |
+| `repository/produtor.php`, `gravadora.php`, `editora.php` | `atualizar()` só gravava contacto/e-mail | Passou a gravar também o nome (e apelido no produtor), para o *Editar* funcionar |
+| `view/pages/administracao.php` | Link "Sair" apontava para `logout.php` (não existe; Linux é *case-sensitive*) | Corrigido para **`LogOut.php`** |
+| `view/pages/artistas.php` | `$m->setNomeMusico('')` apagava o nome do músico antes de inserir | Linha removida |
+
+> `Connection::connectionDB()` já **não** imprime `echo "Conexao estabelecida";` — o problema indicado na secção 1 está resolvido.
+
+### 7.2 Views integradas com PHP (deixaram de ser só HTML)
+
+| Ficheiro | O que foi ligado |
+|---|---|
+| `view/pages/instrumentos.php` | Bootstrap de sessão + `InstrumentoController`; `foreach` da lista; `POST acao=salvar/remover`; modais ligados via `form=` |
+| `view/pages/generos.php` | Bootstrap + `GeneroController`; lista via `GeneroDAO::listarTodos()`; `POST acao=salvar/remover` |
+| `view/pages/logs.php` | Bootstrap + `LogsController::listarLogs()`; cabeçalho com utilizador/perfil; pesquisa `?q=` (filtra em memória) |
+| `view/pages/producao.php` | Bootstrap + controllers de `Produtor`/`Gravadora`/`Editora`; 3 abas com `foreach`; CRUD completo (`adicionar`/`atualizar`/`remover`); modais de edição pré-preenchidos via `GET acao=editar&tipo=...&sel=...` |
+
+Todas as páginas começam agora com o *bootstrap* de sessão (`Sessao::getUtilizadorLogado()` + `header('Location: Login.php')` se não autenticado) e mostram **nome + perfil** reais no cabeçalho.
+
+### 7.3 Estrutura / limpeza
+
+- **`index.php`** criado na **raiz**: encaminha para `src/view/pages/administracao.php` se houver sessão, senão para `src/view/pages/Login.php`.
+- Removidos os ficheiros obsoletos indicados na secção 4:
+  `repository/produtorRepository.php`, `repository/gravadoraRepository.php`,
+  `repository/editoraRepository.php` e `view/pages/login.html` (substituído por `Login.php`).
+- Removidos os modelos não usados `model/sexo.php` e `model/banda.php`.
+
+### 7.4 Como executar
+
+1. Arrancar o Apache e o MySQL do XAMPP (`/opt/lampp/lampp start`).
+2. Base de dados `discocompacto` (ver `src/repository/connection.php`).
+3. Abrir `http://localhost/PirateSpotify/` — o `index.php` reencaminha para o login.
+
+### 7.5 Ainda por fazer (não bloqueia o funcionamento)
+
+- **Exportar** (discos → CSV/PDF): continua uma opção de menu por implementar.
+- As caixas `.search-input` das listagens (exceto `logs.php`) são apenas visuais — a pesquisa no cliente ainda não está ligada.
+- `InstrumentoDAO` continua **sem `atualizar()`** (só inserir/listar/remover).
+- As palavras-passe são guardadas em texto simples (projeto académico) — não usar em produção.
+

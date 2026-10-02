@@ -130,7 +130,7 @@ $niveis = $nivelDAO->listarNiveis();
         <li><a href="#">Exportar</a></li>
         <li><a href="#administracao" class="active">Administração</a></li>
         <li><a href="logs.php">Logs</a></li>
-        <li><a href="logout.php">Sair</a></li>
+        <li><a href="LogOut.php">Sair</a></li>
       </ul>
     </nav>
   </aside>

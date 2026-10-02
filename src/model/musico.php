@@ -5,6 +5,7 @@ class Musico
 	private $codigoMusico;
 	private $nomeMusico;
 	private $apelidoMusico;
+	private $nomeArtistico;
 	private ?array $instrumento;
 	private $contactoMusico;
 	private $emailMusico;
@@ -48,6 +49,16 @@ class Musico
 	public function setApelidoMusico($apelidoMusico)
 	{
 		$this->apelidoMusico = $apelidoMusico;
+	}
+
+	public function getNomeArtistico()
+	{
+		return $this->nomeArtistico;
+	}
+
+	public function setNomeArtistico($nomeArtistico)
+	{
+		$this->nomeArtistico = $nomeArtistico;
 	}
 
 	public function getInstrumento()

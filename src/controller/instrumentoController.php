@@ -19,8 +19,8 @@ require_once __DIR__ . '/../repository/instrumento.php';
 		return $this->instrumentoDAO->listarTodos();
 	}
 	
-	public function buscarPorCodigo($codigo) {
-		return $this->instrumentoDAO->listarPorCodigo($codigo);
+	public function buscarPorMusico($codigoMusico) {
+		return $this->instrumentoDAO->listarPorMusico($codigoMusico);
 	}
 	
 	public function remover($codigo) {

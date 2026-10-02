@@ -97,15 +97,16 @@ class GravadoraDAO
     public function atualizar($gravadora)
     {
         $conn = Connection::connectionDB();
-        $sql = "UPDATE Gravadora SET Endereco_Gravadora = ?, Email_Gravadora = ?, Contacto_Gravadora = ? WHERE Codigo_Gravadora = ?";
+        $sql = "UPDATE Gravadora SET Nome_Gravadora = ?, Endereco_Gravadora = ?, Email_Gravadora = ?, Contacto_Gravadora = ? WHERE Codigo_Gravadora = ?";
         $ps = $conn->prepare($sql);
 
+        $NomeGravadora = $gravadora->getNomeGravadora();
         $EnderecoGravadora = $gravadora->getEnderecoGravadora();
         $EmailGravadora = $gravadora->getEmailGravadora();
         $ContactoGravadora = $gravadora->getContactoGravadora();
         $CodigoGravadora = $gravadora->getCodigoGravadora();
 
-        $ps->bind_param("sssi", $EnderecoGravadora, $EmailGravadora, $ContactoGravadora, $CodigoGravadora);
+        $ps->bind_param("ssssi", $NomeGravadora, $EnderecoGravadora, $EmailGravadora, $ContactoGravadora, $CodigoGravadora);
         return $ps->execute();
     }
 
