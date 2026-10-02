@@ -115,15 +115,18 @@ class MusicoDAO
     public function atualizar($musico)
     {
         $conn = connection::connectionDB();
-        $sql = "UPDATE Musico SET Email_Musico = ?, Contacto_Musico = ?, Nome_Art_Musico = ? WHERE Codigo_Musico = ?";
+        // Grava também o nome/apelido para o "Editar" funcionar (tal como nos outros DAOs).
+        $sql = "UPDATE Musico SET Nome_Musico = ?, Apelido_Musico = ?, Email_Musico = ?, Contacto_Musico = ?, Nome_Art_Musico = ? WHERE Codigo_Musico = ?";
         $ps = $conn->prepare($sql);
 
+        $nome = $musico->getNomeMusico();
+        $apelido = $musico->getApelidoMusico();
         $email = $musico->getEmailMusico();
         $contacto = $musico->getContactoMusico();
         $nomeArtistico = $musico->getNomeArtistico();
         $codigo = $musico->getCodigoMusico();
 
-        $ps->bind_param("sssi", $email, $contacto, $nomeArtistico, $codigo);
+        $ps->bind_param("sssssi", $nome, $apelido, $email, $contacto, $nomeArtistico, $codigo);
         $ps->execute();
         return $ps->affected_rows > 0;
     }

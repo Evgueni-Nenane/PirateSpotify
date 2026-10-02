@@ -4,7 +4,7 @@ class Connection
 
     private static $hostname = "127.0.0.1";
     private static $username = "root";
-    private static $password = "";
+    private static $password = "System.out.print";
     private static $database = "discocompacto";
 
    public static function connectionDB() {

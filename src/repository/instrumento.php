@@ -103,4 +103,15 @@ class InstrumentoDAO
             return false;
         }
     }
+
+    public function removerRelacoesPorMusico($codigoMusico)
+    {
+        // Apaga todas as ligações músico↔instrumento (usado ao sincronizar o "Editar").
+        $conn = connection::connectionDB();
+        $sql = "DELETE FROM Musico_Instrumento WHERE Codigo_Musico = ?";
+        $ps = $conn->prepare($sql);
+        $ps->bind_param("i", $codigoMusico);
+        $ps->execute();
+        return $ps->affected_rows >= 0;
+    }
 }		

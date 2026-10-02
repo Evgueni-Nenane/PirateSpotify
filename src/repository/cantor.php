@@ -95,15 +95,18 @@ class CantorDAO
     public function atualizar($cantor)
     {
         $conn = Connection::connectionDB();
-        $sql = "UPDATE Cantor SET Email_Cantor = ?, Contacto_Cantor = ? "
+        // Grava também o nome/apelido para o "Editar" funcionar.
+        $sql = "UPDATE Cantor SET Nome_Cantor = ?, Apelido_Cantor = ?, Email_Cantor = ?, Contacto_Cantor = ? "
             . "WHERE Codigo_Cantor = ?";
         $ps = $conn->prepare($sql);
 
+        $nome = $cantor->getNomeCantor();
+        $apelido = $cantor->getApelidoCantor();
         $email = $cantor->getEmailCantor();
         $contacto = $cantor->getContactoCantor();
         $codigo = $cantor->getCodigoCantor();
 
-        $ps->bind_param("ssi", $email, $contacto, $codigo);
+        $ps->bind_param("ssssi", $nome, $apelido, $email, $contacto, $codigo);
         return $ps->execute();
     }
 

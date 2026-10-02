@@ -96,15 +96,18 @@ class CompositorDAO
     public function atualizar($compositor)
     {
         $conn = Connection::connectionDB();
-        $sql = "UPDATE Compositor SET Email_Compositor = ?, Contacto_Compositor = ? "
+        // Grava também o nome/apelido para o "Editar" funcionar.
+        $sql = "UPDATE Compositor SET Nome_Compositor = ?, Apelido_Compositor = ?, Email_Compositor = ?, Contacto_Compositor = ? "
             . "WHERE Codigo_Compositor = ?";
         $ps = $conn->prepare($sql);
 
+        $nome = $compositor->getNomeCompositor();
+        $apelido = $compositor->getApelidoCompositor();
         $email = $compositor->getEmailCompositor();
         $contacto = $compositor->getContactoCompositor();
         $codigo = $compositor->getCodigoCompositor();
 
-        $ps->bind_param("ssi", $email, $contacto, $codigo);
+        $ps->bind_param("ssssi", $nome, $apelido, $email, $contacto, $codigo);
         return $ps->execute();
     }
 
