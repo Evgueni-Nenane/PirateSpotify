@@ -9,12 +9,13 @@ class DiscoDAO
     public function inserir($disco)
     {
         $conn = connection::connectionDB();
-        $sql = "INSERT INTO Disco_Compacto (Titulo, Preco, Ano_Edicao) VALUES (?, ?, ?)";
+        $sql = "INSERT INTO Disco_Compacto (Titulo,Genero, Preco, Ano_Edicao) VALUES (?, ?, ?, ?)";
         $ps = $conn->prepare($sql);
         $Titulo = $disco->getTitulo();
+        $Genero = $disco->getGenero();
         $Preco = $disco->getPreco();
         $Ano_Edicao = $disco->getAnoEdicao();
-        $ps->bind_param("sdi", $Titulo, $Preco, $Ano_Edicao);
+        $ps->bind_param("ssdi", $Titulo, $Genero, $Preco, $Ano_Edicao);
 
         try {
             if ($ps->execute()) {
