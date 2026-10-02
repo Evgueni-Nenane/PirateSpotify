@@ -1,11 +1,20 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../controller/utilizadorController.php';
 require_once __DIR__ . '/../../repository/nivelAcesso.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) { header('Location: Login.php'); exit; }
+
+// Painel de utilizadores: só o Administrador entra aqui.
+if (!Permissao::pode($utilizador, 'utilizadores')) {
+    header('Location: listagemdiscos.php');
+    exit;
+}
+$podeUsers = true;
+$podeLogs  = Permissao::pode($utilizador, 'logs');
 
 $ctrl = new UtilizadorController();
 $nivelDAO = new NivelAcessoDAO();
@@ -129,7 +138,7 @@ $niveis = $nivelDAO->listarNiveis();
         <li class="secnav">Acções</li>
         <li><a href="#">Exportar</a></li>
         <li><a href="#administracao" class="active">Administração</a></li>
-        <li><a href="logs.php">Logs</a></li>
+        <?php if ($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?>
         <li><a href="LogOut.php">Sair</a></li>
       </ul>
     </nav>
@@ -201,9 +210,10 @@ $niveis = $nivelDAO->listarNiveis();
                 <div class="label-group full">
                   <label for="cad-senha">Password Inicial *</label>
                   <div class="inline">
-                    <input type="text" id="cad-senha" name="senha" readonly required placeholder="Clique em Gerar Senha">
-                    <button class="btn btn-secondary btn-sm" type="button"
-                            onclick="gerarSenha()">Gerar Senha</button>
+                    <input type="text" id="cad-senha" name="senha" readonly required placeholder="Clique em Gerar Senha" value="">
+                    <button class="btn btn-secondary btn-sm" type="button">
+                            Gerar Senha
+                    </button>
                   </div>
                 </div>
               </div>

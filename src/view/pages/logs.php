@@ -1,10 +1,19 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../controller/logsController.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) { header('Location: Login.php'); exit; }
+
+// Auditoria: só Administrador e Auditor vêem os logs.
+if (!Permissao::pode($utilizador, 'logs')) {
+    header('Location: listagemdiscos.php');
+    exit;
+}
+$podeUsers = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs  = true;
 
 $logsController = new LogsController();
 $logs = $logsController->listarLogs();
@@ -47,7 +56,7 @@ if ($q !== '') {
         <li><a href="generos.php">Géneros</a></li>
         <li class="secnav">Acções</li>
         <li><a href="#">Exportar</a></li>
-        <li><a href="administracao.php">Administração</a></li>
+        <?php if ($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
         <li><a href="#logs" class="active">Logs</a></li>
         <li><a href="LogOut.php">Sair</a></li>
       </ul>

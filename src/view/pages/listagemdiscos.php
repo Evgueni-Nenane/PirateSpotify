@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../controller/utilizadorController.php';
 require_once __DIR__ . '/../../repository/disco.php';
@@ -14,6 +15,11 @@ if (!$utilizador) {
     header('Location: Login.php');
     exit;
 }
+$podeAdicionar = Permissao::pode($utilizador, 'adicionar');
+$podeEditar    = Permissao::pode($utilizador, 'editar');
+$podeRemover   = Permissao::pode($utilizador, 'remover');
+$podeUsers     = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs      = Permissao::pode($utilizador, 'logs');
 
 $discoDAO      = new DiscoDAO();
 $faixaDAO      = new FaixaDAO();
@@ -33,12 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'];
 
     if ($acao === 'remover') {
+        if (($bloq = Permissao::bloquear($utilizador, 'remover'))) { $msg = $bloq; }
+        else {
         $id = (int)($_POST['sel'] ?? 0);
         if ($id === 0) $msg = 'Seleccione um disco.';
         else $msg = $discoDAO->remover($id) ? 'Disco removido.' : 'Erro ao remover o disco.';
+        }
     }
 
     if ($acao === 'atualizar') {
+        if (($bloq = Permissao::bloquear($utilizador, 'editar'))) { $msg = $bloq; }
+        else {
         $id = (int)$_POST['id'];
         $discoDAO->atualizar(new DiscoCompacto(
             $id,
@@ -61,9 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $generoDAO->inserirRelacaoGeneroDisco($id, (int)$g);
         }
         $msg = 'Disco atualizado.';
+        }
     }
 
     if ($acao === 'addfaixa') {
+        if (($bloq = Permissao::bloquear($utilizador, 'adicionar'))) { $msg = $bloq; }
+        else {
         $id  = (int)$_POST['id'];
         $dur = sprintf('%02d:%02d', (int)$_POST['min'], (int)$_POST['seg']);
         $num = count($faixaDAO->listarPorCodigo($id)) + 1;
@@ -81,9 +95,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $msg = 'Erro ao adicionar a faixa.';
         }
+        }
     }
 
     if ($acao === 'atualizarfaixa') {
+        if (($bloq = Permissao::bloquear($utilizador, 'editar'))) { $msg = $bloq; }
+        else {
         // Edita nome/artista/duração e sincroniza os participantes da faixa.
         $id = (int)$_POST['id'];
         $f  = (int)$_POST['id_faixa'];
@@ -107,9 +124,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach (array_diff($novosCant, $atualCant) as $c) $faixaDAO->InserRelacaoCantor($f, $c);
         $msg = 'Faixa atualizada.';
         $det = $discoDAO->buscarPorCodigo($id);
+        }
     }
 
     if ($acao === 'removerfaixa') {
+        if (($bloq = Permissao::bloquear($utilizador, 'remover'))) { $msg = $bloq; }
+        else {
         $id = (int)$_POST['id'];
         $f  = (int)($_POST['sel_faixa'] ?? 0);
         if ($f === 0) {
@@ -122,6 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = $faixaDAO->remover($f) ? 'Faixa removida.' : 'Não foi possível remover a faixa.';
         }
         $det = $discoDAO->buscarPorCodigo($id);   // volta a abrir os detalhes
+        }
     }
 }
 
@@ -210,8 +231,8 @@ function nomes($lista, $g1, $g2)
                     <li><a href="generos.php">Géneros</a></li>
                     <li class="secnav">Acções</li>
                     <li><a href="#">Exportar</a></li>
-                    <li><a href="administracao.php">Administração</a></li>
-                    <li><a href="logs.php">Logs</a></li>
+                    <?php if ($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
+                    <?php if ($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?>
                     <li><a href="LogOut.php">Sair</a></li>
                 </ul>
             </nav>
@@ -269,10 +290,16 @@ function nomes($lista, $g1, $g2)
                         </div>
 
                         <div class="table-actions">
+                            <?php if ($podeRemover): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
                                 onclick="return confirm('Remover o disco seleccionado e as suas faixas?')">Remover</button>
+                            <?php endif; ?>
+                            <?php if ($podeAdicionar): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="faixas" formmethod="get">Adicionar Faixas</button>
+                            <?php endif; ?>
+                            <?php if ($podeEditar): ?>
                             <button class="btn btn-primary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
+                            <?php endif; ?>
                             <button class="btn btn-primary btn-sm" type="submit" name="acao" value="detalhes" formmethod="get">Ver Detalhes</button>
                         </div>
                     </form>
@@ -350,10 +377,14 @@ function nomes($lista, $g1, $g2)
                 </div>
                 <div class="modal-footer">
                     <label for="modal-detalhes-toggle" class="btn btn-secondary">Fechar</label>
+                    <?php if ($podeEditar): ?>
                     <button class="btn btn-secondary" type="submit" name="acao" value="editarfaixa" formmethod="get"
                         onclick="return !!document.querySelector('#form-detalhes input[name=sel_faixa]:checked') || (alert('Seleccione uma faixa.'), false)">Editar Faixa</button>
+                    <?php endif; ?>
+                    <?php if ($podeRemover): ?>
                     <button class="btn btn-primary" type="submit"
                         onclick="return !!document.querySelector('#form-detalhes input[name=sel_faixa]:checked') || (alert('Seleccione uma faixa.'), false) ? confirm('Remover a faixa seleccionada?') : false">Remover Faixa</button>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>
@@ -567,4 +598,4 @@ function nomes($lista, $g1, $g2)
 
 </body>
 
-</html>s
+</html>

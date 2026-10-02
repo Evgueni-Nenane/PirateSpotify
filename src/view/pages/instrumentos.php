@@ -1,11 +1,16 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../model/instrumento.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../controller/instrumentoController.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) { header('Location: Login.php'); exit; }
+$podeAdicionar = Permissao::pode($utilizador, 'adicionar');
+$podeRemover   = Permissao::pode($utilizador, 'remover');
+$podeUsers     = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs      = Permissao::pode($utilizador, 'logs');
 
 $instrController = new InstrumentoController();
 $msg = '';
@@ -15,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'] ?? '';
 
     if ($acao === 'salvar') {
+        if (($bloq = Permissao::bloquear($utilizador, 'adicionar'))) { $erro = $bloq; }
+        else {
         $nome = trim($_POST['nome'] ?? '');
         if ($nome === '') {
             $erro = 'O nome do instrumento é obrigatório.';
@@ -22,7 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $novo = $instrController->adicionarInstrumento(new Instrumento(null, $nome));
             $msg = $novo > 0 ? 'Instrumento adicionado com sucesso.' : 'Erro ao adicionar (já existe?).';
         }
+        }
     } elseif ($acao === 'remover') {
+        if (($bloq = Permissao::bloquear($utilizador, 'remover'))) { $erro = $bloq; }
+        else {
         $id = (int)($_POST['sel'] ?? 0);
         if ($id === 0) {
             $erro = 'Seleccione um instrumento.';
@@ -30,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = $instrController->remover($id)
                 ? 'Instrumento removido.'
                 : 'Não foi possível remover (o instrumento está associado a músicos).';
+        }
         }
     }
 }
@@ -124,8 +135,8 @@ $instrumentos = $instrController->listarInstrumentos();
               </table>
             </div>
             <div class="table-actions">
-              <label for="m-rem-instr" class="btn btn-secondary btn-sm">Remover</label>
-              <label for="tab-cad" class="btn btn-primary btn-sm">Adicionar</label>
+              <?php if ($podeRemover): ?><label for="m-rem-instr" class="btn btn-secondary btn-sm">Remover</label><?php endif; ?>
+              <?php if ($podeAdicionar): ?><label for="tab-cad" class="btn btn-primary btn-sm">Adicionar</label><?php endif; ?>
             </div>
           </form>
         </section>

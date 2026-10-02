@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../repository/musico.php';
 require_once __DIR__ . '/../../repository/cantor.php';
@@ -9,6 +10,11 @@ require_once __DIR__ . '/../../repository/instrumento.php';
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) { header('Location: Login.php'); exit; }
 $username = $utilizador->getUser_name();
+$podeAdicionar = Permissao::pode($utilizador, 'adicionar');
+$podeEditar    = Permissao::pode($utilizador, 'editar');
+$podeRemover   = Permissao::pode($utilizador, 'remover');
+$podeUsers     = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs      = Permissao::pode($utilizador, 'logs');
 
 $musicoDAO = new MusicoDAO();
 $cantorDAO = new CantorDAO();
@@ -21,6 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo = $_POST['tipo'] ?? '';
 
     if ($acao === 'cadastrar') {
+        if (($bloq = Permissao::bloquear($utilizador, 'adicionar'))) { $msg = $bloq; }
+        else {
         $nome     = trim($_POST['nome'] ?? '');
         $apelido  = trim($_POST['apelido'] ?? '');
         $contacto = trim($_POST['contacto'] ?? '');
@@ -46,9 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $msg = 'Escolha o tipo de artista.';
         }
+        }
     }
 
     if ($acao === 'atualizar') {
+        if (($bloq = Permissao::bloquear($utilizador, 'editar'))) { $msg = $bloq; }
+        else {
         $id       = (int)($_POST['id'] ?? 0);
         $nome     = trim($_POST['nome'] ?? '');
         $apelido  = trim($_POST['apelido'] ?? '');
@@ -73,9 +84,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $msg = 'Dados inválidos para atualizar.';
         }
+        }
     }
 
     if ($acao === 'remover') {
+        if (($bloq = Permissao::bloquear($utilizador, 'remover'))) { $msg = $bloq; }
+        else {
         // Cada aba selecciona pelo seu próprio name; mantém-se o formato antigo "tipo:id".
         $id = (int)($_POST['sel_' . $tipo] ?? 0);
         if ($id === 0) {
@@ -88,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         elseif ($tipo === 'compositor')  $ok = $id > 0 && $compositorDAO->remover($id);
         else                             $ok = false;
         $msg = $ok ? 'Artista removido.' : 'Não foi possível remover (seleccione um artista que não esteja em discos).';
+        }
     }
 
     // Volta para a mesma aba depois de gravar (padrão POST-Redirect-GET).
@@ -202,8 +217,8 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                     <li><a href="generos.php">Géneros</a></li>
                     <li class="secnav">Acções</li>
                     <li><a href="#">Exportar</a></li>
-                    <li><a href="administracao.php">Administração</a></li>
-                    <li><a href="logs.php">Logs</a></li>
+                    <?php if ($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
+                    <?php if ($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?>
                     <li><a href="LogOut.php">Sair</a></li>
                 </ul>
             </nav>
@@ -263,10 +278,16 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                             </div>
                         </div>
                         <div class="table-actions">
+                            <?php if ($podeRemover): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
                                 onclick="return confirm('Remover o músico seleccionado?')">Remover</button>
+                            <?php endif; ?>
+                            <?php if ($podeEditar): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
+                            <?php endif; ?>
+                            <?php if ($podeAdicionar): ?>
                             <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
+                            <?php endif; ?>
                         </div>
                     </form>
 
@@ -293,10 +314,16 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                             </div>
                         </div>
                         <div class="table-actions">
+                            <?php if ($podeRemover): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
                                 onclick="return confirm('Remover o compositor seleccionado?')">Remover</button>
+                            <?php endif; ?>
+                            <?php if ($podeEditar): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
+                            <?php endif; ?>
+                            <?php if ($podeAdicionar): ?>
                             <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
+                            <?php endif; ?>
                         </div>
                     </form>
 
@@ -324,10 +351,16 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                         </div>
 
                         <div class="table-actions">
+                            <?php if ($podeRemover): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover"
                                 onclick="return confirm('Remover o cantor seleccionado?')">Remover</button>
+                            <?php endif; ?>
+                            <?php if ($podeEditar): ?>
                             <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar</button>
+                            <?php endif; ?>
+                            <?php if ($podeAdicionar): ?>
                             <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
+                            <?php endif; ?>
                         </div>
                     </form>
                 </div>

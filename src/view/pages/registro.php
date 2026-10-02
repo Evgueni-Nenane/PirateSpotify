@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../repository/disco.php';
 require_once __DIR__ . '/../../repository/generorepository.php';
@@ -10,6 +11,9 @@ if (!$utilizador) {
   exit;
 }
 $username = $utilizador->getUser_name();
+$podeAdicionar = Permissao::pode($utilizador, 'adicionar');
+$podeUsers     = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs      = Permissao::pode($utilizador, 'logs');
 $generoDAO = new GeneroDAO();
 $generos   = $generoDAO->listarTodos();
 
@@ -22,6 +26,8 @@ if (isset($_GET['ok'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  if (($bloq = Permissao::bloquear($utilizador, 'adicionar'))) { $erro = $bloq; }
+  else {
   $titulo = trim($_POST['titulo'] ?? '');
   $preco  = ($_POST['preco'] ?? '') !== '' ? (float)$_POST['preco'] : 0;
   // o calendário envia AAAA-MM-DD; o modelo guarda só o ano
@@ -46,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
       $erro = 'Erro ao registar o disco.';
     }
+  }
   }
 }
 ?>
@@ -80,8 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <li><a href="generos.php">Géneros</a></li>
           <li class="secnav">Acções</li>
           <li><a href="#">Exportar</a></li>
-          <li><a href="administracao.php">Administração</a></li>
-          <li><a href="logs.php">Logs</a></li>
+          <?php if ($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
+          <?php if ($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?>
           <li><a href="LogOut.php">Sair</a></li>
         </ul>
       </nav>
@@ -141,8 +148,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="table-actions">
+              <?php if ($podeAdicionar): ?>
               <button class="btn btn-secondary" type="reset">Limpar</button>
               <button class="btn btn-primary" type="submit">Registar Disco</button>
+              <?php else: ?>
+              <span class="text-muted text-sm">O seu perfil só pode listar.</span>
+              <?php endif; ?>
             </div>
           </form>
         </div>

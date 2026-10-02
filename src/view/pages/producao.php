@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
 require_once __DIR__ . '/../../controller/produtorController.php';
 require_once __DIR__ . '/../../controller/gravadoraController.php';
@@ -10,6 +11,11 @@ require_once __DIR__ . '/../../model/editora.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) { header('Location: Login.php'); exit; }
+$podeAdicionar = Permissao::pode($utilizador, 'adicionar');
+$podeEditar    = Permissao::pode($utilizador, 'editar');
+$podeRemover   = Permissao::pode($utilizador, 'remover');
+$podeUsers     = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs      = Permissao::pode($utilizador, 'logs');
 
 $prodController = new ProdutorController();
 $gravController = new GravadoraController();
@@ -23,7 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tipo = $_POST['tipo'] ?? '';
     $acao = $_POST['acao'] ?? '';
 
-    if ($tipo === 'produtor') {
+    // Níveis de acesso: adicionar / editar(atualizar) / remover.
+    $permissaoPedido = $acao === 'adicionar' ? 'adicionar'
+        : ($acao === 'atualizar' ? 'editar'
+        : ($acao === 'remover' ? 'remover' : ''));
+    if ($permissaoPedido === '' || ($bloq = Permissao::bloquear($utilizador, $permissaoPedido))) {
+        $msg = $permissaoPedido === '' ? 'Acção inválida.' : $bloq;
+    } elseif ($tipo === 'produtor') {
         if ($acao === 'adicionar') {
             $novo = $prodController->cadastrarProdutor(new Produtor(
                 null, trim($_POST['nome'] ?? ''), trim($_POST['apelido'] ?? ''),
@@ -79,6 +91,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = $id > 0 && $editController->removerEditora($id)
                 ? 'Editora removida.'
                 : 'Seleccione uma editora que não esteja em discos.';
+        } else {
+            $msg = 'Tipo inválido.';
         }
     }
 
@@ -137,8 +151,8 @@ $editoras   = $editController->listarEditoras();
         <li><a href="generos.php">Géneros</a></li>
         <li class="secnav">Acções</li>
         <li><a href="#">Exportar</a></li>
-        <li><a href="administracao.php">Administração</a></li>
-        <li><a href="logs.php">Logs</a></li>
+        <?php if ($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
+        <?php if ($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?>
         <li><a href="LogOut.php">Sair</a></li>
       </ul>
     </nav>
@@ -198,9 +212,9 @@ $editoras   = $editController->listarEditoras();
               </table>
             </div>
             <div class="table-actions">
-              <label for="m-rem-prod" class="btn btn-secondary btn-sm">Remover</label>
-              <button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button>
-              <label for="m-add-prod" class="btn btn-primary btn-sm">Adicionar</label>
+              <?php if ($podeRemover): ?><label for="m-rem-prod" class="btn btn-secondary btn-sm">Remover</label><?php endif; ?>
+              <?php if ($podeEditar): ?><button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button><?php endif; ?>
+              <?php if ($podeAdicionar): ?><label for="m-add-prod" class="btn btn-primary btn-sm">Adicionar</label><?php endif; ?>
             </div>
           </form>
         </section>
@@ -227,9 +241,9 @@ $editoras   = $editController->listarEditoras();
               </table>
             </div>
             <div class="table-actions">
-              <label for="m-rem-grav" class="btn btn-secondary btn-sm">Remover</label>
-              <button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button>
-              <label for="m-add-grav" class="btn btn-primary btn-sm">Adicionar</label>
+              <?php if ($podeRemover): ?><label for="m-rem-grav" class="btn btn-secondary btn-sm">Remover</label><?php endif; ?>
+              <?php if ($podeEditar): ?><button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button><?php endif; ?>
+              <?php if ($podeAdicionar): ?><label for="m-add-grav" class="btn btn-primary btn-sm">Adicionar</label><?php endif; ?>
             </div>
           </form>
         </section>
@@ -256,9 +270,9 @@ $editoras   = $editController->listarEditoras();
               </table>
             </div>
             <div class="table-actions">
-              <label for="m-rem-edit" class="btn btn-secondary btn-sm">Remover</label>
-              <button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button>
-              <label for="m-add-edit" class="btn btn-primary btn-sm">Adicionar</label>
+              <?php if ($podeRemover): ?><label for="m-rem-edit" class="btn btn-secondary btn-sm">Remover</label><?php endif; ?>
+              <?php if ($podeEditar): ?><button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button><?php endif; ?>
+              <?php if ($podeAdicionar): ?><label for="m-add-edit" class="btn btn-primary btn-sm">Adicionar</label><?php endif; ?>
             </div>
           </form>
         </section>
