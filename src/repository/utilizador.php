@@ -125,7 +125,7 @@ class UtilizadorDAO
         if ($row) {
             $perfil = new NivelAcesso($row['CodigoNivel'], $row['NomeNivel']);
             $utilizador = new Utilizador(
-                foto: $row['foto'],
+                foto: $row['Foto'],
                 perfil: $perfil,
                 email: $row['Email'],
                 contacto: $row['Contacto']
@@ -150,4 +150,14 @@ class UtilizadorDAO
         $ps->execute();
         return true;
     }
+
+
+    public function resetarSenha($codigoUser, $novaSenha)
+{
+    $conn = connection::connectionDB();
+    $ps = $conn->prepare("UPDATE Utilizador SET Senha = ?, Primeiro_Acesso = 1 WHERE Codigo_User = ?");
+    $ps->bind_param("si", $novaSenha, $codigoUser);
+    $ps->execute();
+    return $ps->affected_rows > 0;
+}
 }

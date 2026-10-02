@@ -7,7 +7,7 @@ Sessao::iniciar();
 
 // Se já estiver logado, não faz sentido ver o login outra vez — manda para o dashboard
 if (Sessao::estaLogado()) {
-    header('Location: dashboard.php');
+    header('Location: administracao.php');
     exit;
 }
 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: mudar-senha.php');
                 exit;
             }
-            header('Location: dashboard.html');
+            header('Location: administracao.php');
             exit;
         } else {
             $erro = 'Utilizador ou Palavra-passe incorretos.';

@@ -14,19 +14,19 @@
     <nav>
       <ul>
         <li class="secnav">Menu Principal</li>
-        <li><a href="registro.html">Registar</a></li>
-        <li><a href="listagemdiscos.html">Listar Discos</a></li>
+        <li><a href="registro.php">Registar</a></li>
+        <li><a href="listagemdiscos.php">Listar Discos</a></li>
         <li class="secnav">Intervenientes</li>
-        <li><a href="artistas.html">Artistas</a></li>
+        <li><a href="artistas.php">Artistas</a></li>
         <li><a href="#producao" class="active">Produção</a></li>
         <li class="secnav">Cadastros</li>
-        <li><a href="instrumentos.html">Instrumentos</a></li>
-        <li><a href="generos.html">Géneros</a></li>
+        <li><a href="instrumentos.php">Instrumentos</a></li>
+        <li><a href="generos.php">Géneros</a></li>
         <li class="secnav">Acções</li>
         <li><a href="#">Exportar</a></li>
-        <li><a href="administracao.html">Administração</a></li>
-        <li><a href="logs.html">Logs</a></li>
-        <li><a href="#">Sair</a></li>
+        <li><a href="administracao.php">Administração</a></li>
+        <li><a href="logs.php">Logs</a></li>
+        <li><a href="LogOut.php">Sair</a></li>
       </ul>
     </nav>
   </aside>

@@ -35,4 +35,8 @@ require_once __DIR__ . '/../repository/utilizador.php';
     public function buscarFoto($codigoUser) {
         return $this->utilizadorDAO->buscarFoto($codigoUser);
     }
+
+    public function resetarSenha($codigo, $novaSenha) {
+    return $this->utilizadorDAO->resetarSenha($codigo, $novaSenha);
+}
 }

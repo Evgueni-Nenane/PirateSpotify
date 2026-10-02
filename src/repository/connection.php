@@ -1,21 +1,20 @@
 <?php
-    class Connection {
+class Connection
+{
 
-        private static $hostname = "localhost";
-        private static $username = "root";
-        private static $password = "";
-        private static $database = "discocompacto";
+    private static $hostname = "127.0.0.1";
+    private static $username = "root";
+    private static $password = "";
+    private static $database = "discocompacto";
 
-        public static function connectionDB() {
-            $conexao = new mysqli(self::$hostname, self::$username, self::$password, self::$database);
+   public static function connectionDB() {
+    $conexao = mysqli_init();
+    $conexao->options(MYSQLI_OPT_CONNECT_TIMEOUT, 3);
+    @$conexao->real_connect(self::$hostname, self::$username, self::$password, self::$database);
 
-            if (!$conexao) {
-                die("Erro de conexao com a base de dados " . mysqli_connect_error()."(".mysqli_connect_error().")");
-            } else {
-                echo "Conexao estabelecida";
-                return $conexao;
-            }
-        }
-
-    }   
-?>
+    if ($conexao->connect_error) {
+        die("Erro de conexao com a base de dados: " . $conexao->connect_error);
+    }
+    return $conexao;
+}
+}

@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../../model/sessao.php';
+require_once __DIR__ . '/../../controller/loginController.php';
+
+
+$utilizador = Sessao::getUtilizadorLogado();
+if (!$utilizador) { header('Location: Login.php'); exit; }
+$username = $utilizador->getUser_name();
+
+?>
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -14,19 +25,19 @@
     <nav>
       <ul>
         <li class="secnav">Menu Principal</li>
-        <li><a href="registro.html">Registar</a></li>
-        <li><a href="listagemdiscos.html">Listar Discos</a></li>
+        <li><a href="registro.php">Registar</a></li>
+        <li><a href="listagemdiscos.php">Listar Discos</a></li>
         <li class="secnav">Intervenientes</li>
-        <li><a href="artistas.html">Artistas</a></li>
-        <li><a href="producao.html">Produção</a></li>
+        <li><a href="artistas.php">Artistas</a></li>
+        <li><a href="producao.php">Produção</a></li>
         <li class="secnav">Cadastros</li>
-        <li><a href="instrumentos.html">Instrumentos</a></li>
+        <li><a href="instrumentos.php">Instrumentos</a></li>
         <li><a href="#generos" class="active">Géneros</a></li>
         <li class="secnav">Acções</li>
         <li><a href="#">Exportar</a></li>
-        <li><a href="administracao.html">Administração</a></li>
-        <li><a href="logs.html">Logs</a></li>
-        <li><a href="#">Sair</a></li>
+        <li><a href="administracao.php">Administração</a></li>
+        <li><a href="logs.php">Logs</a></li>
+        <li><a href="LogOut.php">Sair</a></li>
       </ul>
     </nav>
   </aside>
@@ -38,7 +49,7 @@
         <p>Gestão de géneros musicais</p>
       </div>
       <div class="userdetails">
-        <div class="userdetailstxt"><!-- PHP: nome do utilizador autenticado --><p>Nome Apelido</p><!-- PHP: perfil do utilizador --><p>Perfil</p></div>
+        <div class="userdetailstxt"><!-- PHP: nome do utilizador autenticado --> <?= htmlspecialchars($utilizador->getNome()) ?><!-- PHP: perfil do utilizador --><p>Perfil</p></div>
         <img src="../resources/user.png" alt="Foto de Perfil">
       </div>
     </header>

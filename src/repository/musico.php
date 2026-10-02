@@ -15,7 +15,7 @@ class MusicoDAO
         $apelido = $musico->getApelidoMusico();
         $contacto = $musico->getContactoMusico();
         $email = $musico->getEmailMusico();
-        $nomeArtistico = $musico->getNomeArtistico();
+        $nomeArtistico = $musico->getNomeMusico();
 
         $ps->bind_param("sssss", $nome, $apelido, $contacto, $email, $nomeArtistico);
 
@@ -85,7 +85,7 @@ class MusicoDAO
             $row['Contacto_Musico'],
             $row['Email_Musico']
         );
-        $musico->setNomeArtistico($row['Nome_Art_Musico']);
+        $musico->setNomeMusico($row['Nome_Art_Musico']);
         return $musico;
     }
 

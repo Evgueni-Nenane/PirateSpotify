@@ -1,0 +1,11 @@
+$discos = $discoDAO->listarTodos();   // depois das acções, para já vir actualizado
+$username = $utilizador->getUser_name();
+$discoDAO = new DiscoDAO();
+$discos   = $discoDAO->listarTodos();
+$utilizadorController = new UtilizadorController();
+$fotoLogado = null;
+foreach ($utilizadorController->listarUtilizador() as $u) {
+    if ($u->getUser_name() === $utilizador->getUser_name()) {
+        $fotoLogado = $utilizadorController->buscarFoto($u->getCodigo());
+    }
+}

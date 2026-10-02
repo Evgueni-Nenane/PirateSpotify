@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sucesso = $loginController->atualizarSenha($username, $senhaAtual, $novaSenha);
 
         if ($sucesso) {
-            header('Location: dashboard.php');
+            header('Location: administracao.php');
             exit;
         } else {
             $erro = 'Não foi possível atualizar a senha. Confirma a senha atual.';

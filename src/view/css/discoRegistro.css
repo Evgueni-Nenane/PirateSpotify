@@ -1,0 +1,7 @@
+/* Estilos extra do registro.php (complementa o administracao.css) */
+.alert { padding: .7rem 1rem; border-radius: 8px; font-size: .85rem; margin-bottom: 1rem; border: 1px solid; }
+.alert-ok { background: #f0faf3; border-color: #bfe3c8; color: #1d6b34; }
+.alert-erro { background: #fdf1f1; border-color: #f0c4c4; color: #a12626; }
+
+/* Aba fixa "Novo Disco" (sem rádios, por isso fica sempre activa) */
+.tab-label.active { background: #fff; color: #1e1e1e; box-shadow: 0 1px 4px rgba(0,0,0,.06); cursor: default; }

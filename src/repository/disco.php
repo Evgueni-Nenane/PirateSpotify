@@ -33,8 +33,8 @@ class DiscoDAO
         $sql = "SELECT d.Codigo_Disco, d.Titulo, "
             . "GROUP_CONCAT(g.Nome_Genero SEPARATOR ', ') AS Generos, d.Preco, d.Ano_Edicao"
             . " FROM Disco_Compacto d"
-            . " INNER JOIN Disco_Genero dg ON d.Codigo_Disco = dg.Codigo_DC"
-            . " INNER JOIN Genero g ON dg.Codigo_Genero = g.Codigo_Genero"
+            . " LEFT JOIN Disco_Genero dg ON d.Codigo_Disco = dg.Codigo_DC"
+            . " LEFT JOIN Genero g ON dg.Codigo_Genero = g.Codigo_Genero"
             . " GROUP BY d.Codigo_Disco, d.Titulo, d.Preco, d.Ano_Edicao";
 
         $result = $conn->query($sql);
@@ -45,7 +45,13 @@ class DiscoDAO
                 $row['Titulo'],
                 $row['Preco'],
                 $row['Ano_Edicao'],
-                [], [], [], [], [], [], [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
                 null,
                 []
             );
@@ -75,7 +81,13 @@ class DiscoDAO
             $row['Titulo'],
             $row['Preco'],
             $row['Ano_Edicao'],
-            [], [], [], [], [], [], [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
             null,
             []
         );
@@ -102,7 +114,13 @@ class DiscoDAO
             $row['Titulo'],
             $row['Preco'],
             $row['Ano_Edicao'],
-            [], [], [], [], [], [], [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
             null,
             []
         );
@@ -138,7 +156,7 @@ class DiscoDAO
             $ps->bind_param("i", $codigoDisco);
             $ps->execute();
 
-            
+
             $tabelasComCodigoDC = ["Compositor_DC", "Musico_DC", "Cantor_DC", "Disco_Genero"];
             foreach ($tabelasComCodigoDC as $tabela) {
                 $ps = $conn->prepare("DELETE FROM $tabela WHERE Codigo_DC = ?");
@@ -146,7 +164,7 @@ class DiscoDAO
                 $ps->execute();
             }
 
-            
+
             $tabelasComCodigoDisco = ["Edicao", "GravadoraDisco", "ProDC"];
             foreach ($tabelasComCodigoDisco as $tabela) {
                 $ps = $conn->prepare("DELETE FROM $tabela WHERE Codigo_Disco = ?");
