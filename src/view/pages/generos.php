@@ -72,7 +72,7 @@ $generos = $generoController->listarGeneros();
           <li><a href="#generos" class="active">Géneros</a></li>
           <li class="secnav">Acções</li>
           <li><a href="#">Exportar</a></li>
-          <li><a href="administracao.php">Administração</a></li>
+          <?php if (Permissao::pode($utilizador, 'administracao')): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
           <?php if (Permissao::pode($utilizador, 'logs')): ?><li><a href="logs.php">Logs</a></li><?php endif; ?> <li><a href="LogOut.php">Sair</a></li>
         </ul>
       </nav>
