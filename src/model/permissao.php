@@ -18,7 +18,7 @@ class Permissao
      * Regras pedidas:
      * - Operador:        só Listar e Criar
      * - Superoperador:   Listar, Criar, Editar e Apagar (não gere utilizadores)
-     * - Administrador:   CRUD completo + painel de utilizadores
+     * - Administrador:   CRUD completo + painel de utilizadores (sem logs)
      * - Auditor:         CRUD completo + ver logs, sem painel de utilizadores
      *
      * @return array{ler:bool,adicionar:bool,editar:bool,remover:bool,utilizadores:bool,logs:bool}
@@ -40,7 +40,7 @@ class Permissao
             ],
             self::ADMINISTRADOR => [
                 'ler' => true, 'adicionar' => true, 'editar' => true, 'remover' => true,
-                'utilizadores' => true, 'logs' => true,
+                'utilizadores' => true, 'logs' => false,
             ],
             default => [
                 'ler' => false, 'adicionar' => false, 'editar' => false, 'remover' => false,

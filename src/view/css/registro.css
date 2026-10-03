@@ -940,3 +940,8 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+
+        /* Acrescenta no fim do teu CSS do registro: mensagens de sucesso/erro */
+.alert { padding: .7rem 1rem; border-radius: 8px; font-size: .85rem; border: 1px solid; }
+.alert-ok { background: #f0faf3; border-color: #bfe3c8; color: #1d6b34; }
+.alert-erro { background: #fdf1f1; border-color: #f0c4c4; color: #a12626; }
