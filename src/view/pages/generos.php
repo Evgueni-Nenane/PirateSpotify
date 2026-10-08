@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../model/sessao.php';
 require_once __DIR__ . '/../../model/genero.php';
 require_once __DIR__ . '/../../controller/loginController.php';
+require_once __DIR__ . '/../../controller/logsController.php';
 require_once __DIR__ . '/../../controller/generoController.php';
 require_once __DIR__ . '/../../model/permissao.php';
 
@@ -11,6 +12,9 @@ if (!$utilizador) {
   header('Location: Login.php');
   exit;
 }
+
+$podeUsers     = Permissao::pode($utilizador, 'utilizadores');
+$podeLogs      = Permissao::pode($utilizador, 'logs');
 
 $generoController = new GeneroController();
 $msg = '';
@@ -25,6 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $erro = 'O nome do género é obrigatório.';
     } else {
       $novo = $generoController->adicionarGenero(new Genero(null, $nome));
+      if ($novo > 0) {
+        LogsController::registar('Registou o género: ' . $nome);
+      }
       $msg = $novo > 0 ? 'Género adicionado com sucesso.' : 'Erro ao adicionar (já existe?).';
     }
   } elseif ($acao === 'remover') {
@@ -32,7 +39,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($id === 0) {
       $erro = 'Seleccione um género.';
     } else {
-      $msg = $generoController->removerGenero($id)
+      $removido = $generoController->removerGenero($id);
+      if ($removido) {
+        LogsController::registar('Removeu o género ID ' . $id);
+      }
+      $msg = $removido
         ? 'Género removido.'
         : 'Não foi possível remover (o género está associado a discos).';
     }
@@ -72,8 +83,8 @@ $generos = $generoController->listarGeneros();
           <li><a href="#generos" class="active">Géneros</a></li>
           <li class="secnav">Acções</li>
           <li><a href="#">Exportar</a></li>
-          <?php if (Permissao::pode($utilizador, 'administracao')): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
-          <?php if (Permissao::pode($utilizador, 'logs')): ?><li><a href="logs.php">Logs</a></li><?php endif; ?> <li><a href="LogOut.php">Sair</a></li>
+          <?php if($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
+          <?php if($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?> <li><a href="LogOut.php">Sair</a></li>
         </ul>
       </nav>
     </aside>

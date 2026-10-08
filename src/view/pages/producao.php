@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../model/sessao.php';
 require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
+require_once __DIR__ . '/../../controller/logsController.php';
 require_once __DIR__ . '/../../controller/produtorController.php';
 require_once __DIR__ . '/../../controller/gravadoraController.php';
 require_once __DIR__ . '/../../controller/editoraController.php';
@@ -41,6 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 null, trim($_POST['nome'] ?? ''), trim($_POST['apelido'] ?? ''),
                 trim($_POST['contacto'] ?? ''), trim($_POST['email'] ?? '')
             ));
+            if ($novo > 0) {
+                LogsController::registar('Registou o produtor: ' . trim($_POST['nome'] ?? '') . ' ' . trim($_POST['apelido'] ?? ''));
+            }
             $msg = $novo > 0 ? 'Produtor adicionado.' : 'Erro ao adicionar produtor.';
         } elseif ($acao === 'atualizar') {
             $p = new Produtor(
@@ -50,7 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = $prodController->atualizarProdutor($p) ? 'Produtor atualizado.' : 'Sem alterações.';
         } elseif ($acao === 'remover') {
             $id = (int)($_POST['sel'] ?? 0);
-            $msg = $id > 0 && $prodController->removerProdutor($id)
+            $removido = $id > 0 && $prodController->removerProdutor($id);
+            if ($removido) {
+                LogsController::registar('Removeu o produtor ID ' . $id);
+            }
+            $msg = $removido
                 ? 'Produtor removido.'
                 : 'Seleccione um produtor que não esteja em discos.';
         }
@@ -60,6 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 null, trim($_POST['nome'] ?? ''), trim($_POST['contacto'] ?? ''),
                 trim($_POST['endereco'] ?? ''), trim($_POST['email'] ?? '')
             ));
+            if ($novo > 0) {
+                LogsController::registar('Registou a gravadora: ' . trim($_POST['nome'] ?? ''));
+            }
             $msg = $novo > 0 ? 'Gravadora adicionada.' : 'Erro ao adicionar gravadora.';
         } elseif ($acao === 'atualizar') {
             $g = new Gravadora(
@@ -69,7 +80,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = $gravController->atualizarGravadora($g) ? 'Gravadora atualizada.' : 'Sem alterações.';
         } elseif ($acao === 'remover') {
             $id = (int)($_POST['sel'] ?? 0);
-            $msg = $id > 0 && $gravController->removerGravadora($id)
+            $removido = $id > 0 && $gravController->removerGravadora($id);
+            if ($removido) {
+                LogsController::registar('Removeu a gravadora ID ' . $id);
+            }
+            $msg = $removido
                 ? 'Gravadora removida.'
                 : 'Seleccione uma gravadora que não esteja em discos.';
         }
@@ -79,6 +94,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 null, trim($_POST['nome'] ?? ''), trim($_POST['contacto'] ?? ''),
                 trim($_POST['email'] ?? ''), trim($_POST['endereco'] ?? '')
             ));
+            if ($novo > 0) {
+                LogsController::registar('Registou a editora: ' . trim($_POST['nome'] ?? ''));
+            }
             $msg = $novo > 0 ? 'Editora adicionada.' : 'Erro ao adicionar editora.';
         } elseif ($acao === 'atualizar') {
             $e = new Editora(
@@ -88,7 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $msg = $editController->atualizarEditora($e) ? 'Editora atualizada.' : 'Sem alterações.';
         } elseif ($acao === 'remover') {
             $id = (int)($_POST['sel'] ?? 0);
-            $msg = $id > 0 && $editController->removerEditora($id)
+            $removido = $id > 0 && $editController->removerEditora($id);
+            if ($removido) {
+                LogsController::registar('Removeu a editora ID ' . $id);
+            }
+            $msg = $removido
                 ? 'Editora removida.'
                 : 'Seleccione uma editora que não esteja em discos.';
         } else {

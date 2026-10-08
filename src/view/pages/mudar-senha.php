@@ -27,14 +27,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($novaSenha) < 6) {
         $erro = 'A nova senha deve ter pelo menos 6 caracteres.';
     } else {
-        $loginController = new LoginController();
-        $sucesso = $loginController->atualizarSenha($username, $senhaAtual, $novaSenha);
-
-        if ($sucesso) {
-            header('Location: administracao.php');
-            exit;
+        if ($novaSenha === $senhaAtual) {
+            $erro = 'A nova senha não pode ser igual à senha atual.';
         } else {
-            $erro = 'Não foi possível atualizar a senha. Confirma a senha atual.';
+            $loginController = new LoginController();
+            $sucesso = $loginController->atualizarSenha($username, $senhaAtual, $novaSenha);
+
+            if ($sucesso) {
+                header('Location: administracao.php');
+                exit;
+            } else {
+                $erro = 'Não foi possível atualizar a senha. Confirma a senha atual.';
+            }
         }
     }
 }

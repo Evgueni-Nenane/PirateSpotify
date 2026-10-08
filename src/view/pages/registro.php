@@ -11,6 +11,7 @@ require_once __DIR__ . '/../../repository/produtor.php';
 require_once __DIR__ . '/../../repository/gravadora.php';
 require_once __DIR__ . '/../../repository/editora.php';
 require_once __DIR__ . '/../../repository/edicao.php';
+require_once __DIR__ . '/../../controller/logsController.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
 if (!$utilizador) {
@@ -73,6 +74,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach (($_POST['produtores'] ?? []) as $p) $produtorDAO->inserirRelacaoDiscoProdutor($codigo, (int)$p);
         foreach (($_POST['gravadoras'] ?? []) as $g) $gravadoraDAO->inserirRelacaoDiscoGravadora($codigo, (int)$g);
         if ($codEditora > 0) $edicaoDAO->inserir(new Edicao($codigo, $codEditora, $dataEdicao));
+
+        if ($codEditora > 0) $edicaoDAO->inserir(new Edicao($codigo, $codEditora, $dataEdicao));
+
+        LogsController::registar('Registou o disco: ' . $titulo);
 
         // redireciona: o formulário volta vazio e o F5 não regista outra vez
         header('Location: registro.php?ok=' . $codigo);

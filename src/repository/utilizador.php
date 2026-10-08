@@ -2,9 +2,12 @@
 require_once __DIR__ . '/../model/utilizador.php';
 require_once __DIR__ . '/../model/nivelacesso.php';
 require_once __DIR__ . '/connection.php';
+require_once __DIR__ . '/../model/logs.php';
+require_once __DIR__ . '/../model/sessao.php';
 
 class UtilizadorDAO
 {
+    private static $log;
     public function inserir($utilizador)
     {
         $conn = connection::connectionDB();
@@ -39,6 +42,16 @@ class UtilizadorDAO
 
         try {
             $ps->execute();
+            $horaAgora = date('Y-m-d H:i:s');
+            
+            self::$log = new Logs(
+                nome: Sessao::getUtilizadorLogado()->getNome(),
+                apelido: Sessao::getUtilizadorLogado()->getApelido(),
+                perfil: Sessao::getUtilizadorLogado()->getPerfil()->getNome(),
+                email: Sessao::getUtilizadorLogado()->getEmail(),
+                accao: "Adicionou um novo utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
+                dataHora: $horaAgora
+            );
             return true;
         } catch (mysqli_sql_exception $e) {
             return false;
@@ -58,6 +71,18 @@ class UtilizadorDAO
 
         $ps->bind_param("sissi", $foto, $perfil, $email, $contacto, $codigoUser);
         $ps->execute();
+        Sessao::getUtilizadorLogado();
+
+            $horaAgora = date('Y-m-d H:i:s');
+
+            self::$log = new Logs(
+                nome: Sessao::getUtilizadorLogado()->getNome(),
+                apelido: Sessao::getUtilizadorLogado()->getApelido(),
+                perfil: Sessao::getUtilizadorLogado()->getPerfil()->getNome(),
+                email: Sessao::getUtilizadorLogado()->getEmail(),
+                accao: "Atualizou um utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
+                dataHora: $horaAgora
+            );
         return true;
     }
 
@@ -70,6 +95,18 @@ class UtilizadorDAO
         $foto = $utilizador->getFoto();
         $ps->bind_param("si", $foto, $codigoUser);
         $ps->execute();
+        Sessao::getUtilizadorLogado();
+
+            $horaAgora = date('Y-m-d H:i:s');
+
+            self::$log = new Logs(
+                nome: Sessao::getUtilizadorLogado()->getNome(),
+                apelido: Sessao::getUtilizadorLogado()->getApelido(),
+                perfil: Sessao::getUtilizadorLogado()->getPerfil()->getNome(),
+                email: Sessao::getUtilizadorLogado()->getEmail(),
+                accao: "Adicionou uma foto ao utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
+                dataHora: $horaAgora
+            );
         return true;
     }
 
@@ -148,6 +185,19 @@ class UtilizadorDAO
         $ps = $conn->prepare($sql);
         $ps->bind_param("i", $codigoUser);
         $ps->execute();
+        $utilizador = $this->buscarPorId($codigoUser);
+        Sessao::getUtilizadorLogado();
+
+        $horaAgora = date('Y-m-d H:i:s');
+
+        self::$log = new Logs(
+            nome: Sessao::getUtilizadorLogado()->getNome(),
+            apelido: Sessao::getUtilizadorLogado()->getApelido(),
+            perfil: Sessao::getUtilizadorLogado()->getPerfil()->getNome(),
+            email: Sessao::getUtilizadorLogado()->getEmail(),
+            accao: "Removeu um utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
+            dataHora: $horaAgora
+        );
         return true;
     }
 
@@ -158,6 +208,20 @@ class UtilizadorDAO
     $ps = $conn->prepare("UPDATE Utilizador SET Senha = ?, Primeiro_Acesso = 1 WHERE Codigo_User = ?");
     $ps->bind_param("si", $novaSenha, $codigoUser);
     $ps->execute();
+    $utilizador = $this->buscarPorId($codigoUser);
+
+    Sessao::getUtilizadorLogado();
+
+    $horaAgora = date('Y-m-d H:i:s');
+
+    self::$log = new Logs(
+        nome: Sessao::getUtilizadorLogado()->getNome(),
+        apelido: Sessao::getUtilizadorLogado()->getApelido(),
+        perfil: Sessao::getUtilizadorLogado()->getPerfil()->getNome(),
+        email: Sessao::getUtilizadorLogado()->getEmail(),
+        accao: "Resetou a senha do utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
+        dataHora: $horaAgora
+    );
     return $ps->affected_rows > 0;
 }
 }

@@ -11,6 +11,7 @@ require_once __DIR__ . '/../repository/edicao.php';
 require_once __DIR__ . '/../repository/generorepository.php';
 require_once __DIR__ . '/../repository/faixa.php';
 require_once __DIR__ . '/../model/edicao.php';
+require_once __DIR__ . '/logsController.php';
 
 class DiscoController
 {
@@ -84,6 +85,8 @@ class DiscoController
 
         $edicao = $this->edicaoDAO->buscarPorCodigoDisco($codigoDisco);
         $disco->setEdicao($edicao);
+
+        LogsController::registar('Registou o disco ID ' . $codigoDisco);
         return 1;
     }
 
@@ -99,11 +102,17 @@ class DiscoController
         foreach ($disco->getGeneroMusical() as $genero) {
             $this->generoDAO->inserirRelacaoGeneroDisco($disco->getCodigoDisco(), $genero->getCodigoGenero());
         }
+
+        LogsController::registar('Actualizou o disco ID ' . $disco->getCodigoDisco());
     }
 
     public function removerDisco($codigoDisco)
     {
-        return $this->discoDAO->remover($codigoDisco);
+        $removido = $this->discoDAO->remover($codigoDisco);
+        if ($removido) {
+            LogsController::registar('Eliminou o disco ID ' . $codigoDisco);
+        }
+        return $removido;
     }
 
     public function buscarDiscoCompleto($codigoDisco)
@@ -151,6 +160,7 @@ class DiscoController
             }
         }
 
+        LogsController::registar('Adicionou a faixa ID ' . $idFaixa . ' ao disco ID ' . $codigoDisco);
         return true;
     }
 
@@ -176,6 +186,10 @@ class DiscoController
             if (!$removida) {
                 $todasRemovidas = false;
             }
+        }
+
+        if (count($idsFaixas) > 0) {
+            LogsController::registar('Removeu as faixas ID ' . implode(', ', $idsFaixas));
         }
 
         return $todasRemovidas;

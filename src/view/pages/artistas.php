@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../model/sessao.php';
 require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
+require_once __DIR__ . '/../../controller/logsController.php';
 require_once __DIR__ . '/../../repository/musico.php';
 require_once __DIR__ . '/../../repository/cantor.php';
 require_once __DIR__ . '/../../repository/compositor.php';
@@ -54,6 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $msg = 'Escolha o tipo de artista.';
         }
+
+        if ($id > 0) {
+            LogsController::registar('Registou o artista (' . $tipo . '): ' . $nome . ' ' . $apelido);
+        }
         }
     }
 
@@ -101,6 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         elseif ($tipo === 'cantor')      $ok = $id > 0 && $cantorDAO->remover($id);
         elseif ($tipo === 'compositor')  $ok = $id > 0 && $compositorDAO->remover($id);
         else                             $ok = false;
+
+        if ($ok) {
+            LogsController::registar('Removeu o artista (' . $tipo . ') ID ' . $id);
+        }
+
         $msg = $ok ? 'Artista removido.' : 'Não foi possível remover (seleccione um artista que não esteja em discos).';
         }
     }
@@ -529,4 +539,4 @@ function acaoArtista(acao) {
 </script>
 
 </body>
-</html>s
+</html>

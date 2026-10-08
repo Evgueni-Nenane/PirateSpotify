@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../model/sessao.php';
 require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../controller/loginController.php';
+require_once __DIR__ . '/../../controller/logsController.php';
 require_once __DIR__ . '/../../controller/utilizadorController.php';
 require_once __DIR__ . '/../../repository/disco.php';
 require_once __DIR__ . '/../../repository/faixa.php';
@@ -42,8 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (($bloq = Permissao::bloquear($utilizador, 'remover'))) { $msg = $bloq; }
         else {
         $id = (int)($_POST['sel'] ?? 0);
-        if ($id === 0) $msg = 'Seleccione um disco.';
-        else $msg = $discoDAO->remover($id) ? 'Disco removido.' : 'Erro ao remover o disco.';
+        if ($id === 0) {
+            $msg = 'Seleccione um disco.';
+        } else {
+            $discoRemovido = $discoDAO->buscarPorCodigo($id);   // antes de remover, para guardar o título no log
+            $removido = $discoDAO->remover($id);
+            if ($removido) {
+                LogsController::registar('Eliminou o disco: ' . ($discoRemovido ? $discoRemovido->getTitulo() : 'ID ' . $id));
+            }
+            $msg = $removido ? 'Disco removido.' : 'Erro ao remover o disco.';
+        }
         }
     }
 
@@ -158,7 +167,6 @@ if ($acaoGet !== '') {
         $fId = (int)($_GET['sel_faixa'] ?? 0);
         if ($fId > 0) {
             $edF = $faixaDAO->listarFaixaPorCodigo($fId);
-            if ($edFDisco === 0) $edFDisco = discoDaFaixa($fId);
             foreach ($faixaDAO->listarCompositoresPorFaixa($fId) as $c) $edFComp[] = $c->getCodigoCompositor();
             foreach ($faixaDAO->listarMusicosPorFaixa($fId) as $m)      $edFMus[]  = $m->getCodigoMusico();
             foreach ($faixaDAO->listarCantoresPorFaixa($fId) as $c)     $edFCant[] = $c->getCodigoCantor();

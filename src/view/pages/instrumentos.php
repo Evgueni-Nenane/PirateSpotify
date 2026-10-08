@@ -3,6 +3,7 @@ require_once __DIR__ . '/../../model/sessao.php';
 require_once __DIR__ . '/../../model/permissao.php';
 require_once __DIR__ . '/../../model/instrumento.php';
 require_once __DIR__ . '/../../controller/loginController.php';
+require_once __DIR__ . '/../../controller/logsController.php';
 require_once __DIR__ . '/../../controller/instrumentoController.php';
 
 $utilizador = Sessao::getUtilizadorLogado();
@@ -31,6 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'O nome do instrumento é obrigatório.';
       } else {
         $novo = $instrController->adicionarInstrumento(new Instrumento(null, $nome));
+        if ($novo > 0) {
+          LogsController::registar('Registou o instrumento: ' . $nome);
+        }
         $msg = $novo > 0 ? 'Instrumento adicionado com sucesso.' : 'Erro ao adicionar (já existe?).';
       }
     }
@@ -42,7 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if ($id === 0) {
         $erro = 'Seleccione um instrumento.';
       } else {
-        $msg = $instrController->remover($id)
+        $removido = $instrController->remover($id);
+        if ($removido) {
+          LogsController::registar('Removeu o instrumento ID ' . $id);
+        }
+        $msg = $removido
           ? 'Instrumento removido.'
           : 'Não foi possível remover (o instrumento está associado a músicos).';
       }
@@ -84,8 +92,8 @@ $instrumentos = $instrController->listarInstrumentos();
           <li><a href="generos.php">Géneros</a></li>
           <li class="secnav">Acções</li>
           <li><a href="#">Exportar</a></li>
-          <?php if (Permissao::pode($utilizador, 'administracao')): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
-          <?php if (Permissao::pode($utilizador, 'logs')): ?><li><a href="logs.php">Logs</a></li><?php endif; ?> <li><a href="LogOut.php">Sair</a></li>
+          <?php if($podeUsers): ?><li><a href="administracao.php">Administração</a></li><?php endif; ?>
+          <?php if($podeLogs): ?><li><a href="logs.php">Logs</a></li><?php endif; ?> <li><a href="LogOut.php">Sair</a></li>
         </ul>
       </nav>
     </aside>
