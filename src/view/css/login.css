@@ -87,3 +87,6 @@ a {
     text-decoration: none;
     font-size: 0.9rem;
 }
+
+.pw { -webkit-text-security: disc; }
+form:has(#mostrar:checked) .pw { -webkit-text-security: none; }

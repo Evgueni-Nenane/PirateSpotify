@@ -72,30 +72,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="campo">
                     <label for="password">Palavra-Passe</label>
-                    <input type="password" id="password" name="password" placeholder="Tua palavra-passe">
-                </div>
+                    <input type="text" id="password" name="password" class="pw" placeholder="Tua palavra-passe" autocomplete="off">
+                    <label><input type="checkbox" id="mostrar"> Mostrar senhas</label>
+                   </div>
 
 
                 <div class="campo">
-                    <label>
-                        <input type="checkbox" onclick="mostrarSenhas(this.checked)">Mostrar senhas
-                    </label>
-
                     <div class="center">
                         <button type="submit">Login</button>
                     </div>
                     <hr>
                     <div class="center"><a href="#">Pedir reset de senha</a></div>
+                </div>
             </form>
         </div>
     </div>
-
-    <script>
-        function mostrarSenhas(mostrar) {
-            const tipo = mostrar ? 'text' : 'password';
-            document.getElementById('password').type = tipo;
-        }
-    </script>
 </body>
 
 </html>
