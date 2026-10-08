@@ -90,3 +90,16 @@ a {
 
 .pw { -webkit-text-security: disc; }
 form:has(#mostrar:checked) .pw { -webkit-text-security: none; }
+
+.campo label.mostrar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+}
+
+.campo label.mostrar input {
+    width: auto;
+    padding: 0;
+    margin: 0;
+}

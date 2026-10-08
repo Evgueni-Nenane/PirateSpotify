@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="campo">
                     <label for="password">Palavra-Passe</label>
                     <input type="text" id="password" name="password" class="pw" placeholder="Tua palavra-passe" autocomplete="off">
-                    <label><input type="checkbox" id="mostrar"> Mostrar senhas</label>
+                    <label class="mostrar"><input type="checkbox" id="mostrar"> Mostrar senhas</label>
                    </div>
 
 
