@@ -22,6 +22,24 @@ $cantorDAO = new CantorDAO();
 $compositorDAO = new CompositorDAO();
 $instrDAO = new InstrumentoDAO();
 
+// Botões de acção de uma aba. Cada aba tem o seu formulário (form-musico,
+// form-compositor, form-cantor), por isso o Editar envia o rádio seleccionado
+// por GET e o Remover abre o modal de confirmação dessa aba.
+function acoes($tipo, $podeRemover, $podeEditar, $podeAdicionar)
+{
+    echo '<div class="table-actions">';
+    if ($podeRemover) {
+        echo '<label for="m-rem-' . $tipo . '" class="btn btn-secondary btn-sm" style="cursor:pointer; margin:0;">Remover</label>';
+    }
+    if ($podeEditar) {
+        echo '<button type="submit" name="acao" value="editar" formmethod="get" class="btn btn-secondary btn-sm">Editar</button>';
+    }
+    if ($podeAdicionar) {
+        echo '<label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>';
+    }
+    echo '</div>';
+}
+
 /* ---------- Cadastrar / Atualizar / Remover (POST) ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $acao = $_POST['acao'] ?? '';
@@ -133,6 +151,8 @@ $edTipo = '';           // 'musico' | 'compositor' | 'cantor'
 $edInstrumentos = [];   // instrumentos do músico em edição
 if (($_GET['acao'] ?? '') === 'editar') {
     $edTipo = $_GET['tipo'] ?? '';
+    // fica na aba onde o utilizador estava, mesmo que não tenha seleccionado ninguém
+    $tab = ['musico' => 'musicos', 'compositor' => 'compositores', 'cantor' => 'cantores'][$edTipo] ?? $tab;
     $edId = (int)($_GET['sel_' . $edTipo] ?? 0);
     if ($edId === 0) { // compatibilidade com o formato antigo "tipo:id"
         [$tipoAntigo, $idAntigo] = array_pad(explode(':', $_GET['sel'] ?? ''), 2, '');
@@ -264,7 +284,7 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                     <?php endif; ?>
 
                     <!-- Músicos -->
-                    <form method="post" action="artistas.php">
+                    <form method="post" action="artistas.php" id="form-musico">
                         <input type="hidden" name="tipo" value="musico">
                         <div class="tab-content tab-content-musicos">
                             <div class="table-wrapper">
@@ -286,11 +306,12 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                                     </tbody>
                                 </table>
                             </div>
+                            <?php acoes('musico', $podeRemover, $podeEditar, $podeAdicionar); ?>
                         </div>
                     </form>
 
                     <!-- Compositores -->
-                    <form method="post" action="artistas.php">
+                    <form method="post" action="artistas.php" id="form-compositor">
                         <input type="hidden" name="tipo" value="compositor">
                         <div class="tab-content tab-content-compositores">
                             <div class="table-wrapper">
@@ -310,11 +331,12 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                                     </tbody>
                                 </table>
                             </div>
+                            <?php acoes('compositor', $podeRemover, $podeEditar, $podeAdicionar); ?>
                         </div>
                     </form>
 
                     <!-- Cantores -->
-                    <form method="post" action="artistas.php">
+                    <form method="post" action="artistas.php" id="form-cantor">
                         <input type="hidden" name="tipo" value="cantor">
                         <div class="tab-content tab-content-cantores">
                             <div class="table-wrapper">
@@ -334,24 +356,9 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                                     </tbody>
                                 </table>
                             </div>
+                            <?php acoes('cantor', $podeRemover, $podeEditar, $podeAdicionar); ?>
                         </div>
-
                     </form>
-
-                    <!-- Fila única de ações para Músicos, Compositores e Cantores -->
-                    <div class="table-actions">
-                        <?php if ($podeRemover): ?>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="acaoArtista('remover')">Remover</button>
-                        <?php endif; ?>
-
-                        <?php if ($podeEditar): ?>
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="acaoArtista('editar')">Editar</button>
-                        <?php endif; ?>
-
-                        <?php if ($podeAdicionar): ?>
-                            <label for="modal-adicionar-artista-toggle" class="btn btn-primary btn-sm" style="cursor:pointer; margin:0;">Adicionar</label>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </main>
         </div>
@@ -477,66 +484,18 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
         </div>
     </div>
 
-<script>
-function acaoArtista(acao) {
-    const tabs = {
-        'tab-musicos': 'musico',
-        'tab-compositores': 'compositor',
-        'tab-cantores': 'cantor'
-    };
-
-    let tipo = '';
-    for (const id in tabs) {
-        const radio = document.getElementById(id);
-        if (radio && radio.checked) {
-            tipo = tabs[id];
-            break;
-        }
-    }
-
-    if (!tipo) {
-        alert('Selecione um tipo de artista.');
-        return;
-    }
-
-    const selecionado = document.querySelector('input[name="sel_' + tipo + '"]:checked');
-
-    if (!selecionado) {
-        alert('Selecione um artista primeiro.');
-        return;
-    }
-
-    const id = selecionado.value;
-
-    if (acao === 'remover') {
-        if (!confirm('Tem certeza que deseja remover este artista?')) return;
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = 'artistas.php';
-
-        const campos = {
-            acao: 'remover',
-            tipo: tipo
-        };
-        campos['sel_' + tipo] = id;
-
-        for (const nome in campos) {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = nome;
-            input.value = campos[nome];
-            form.appendChild(input);
-        }
-
-        document.body.appendChild(form);
-        form.submit();
-    } else if (acao === 'editar') {
-        window.location.href = 'artistas.php?acao=editar&tipo=' + encodeURIComponent(tipo) +
-            '&sel_' + encodeURIComponent(tipo) + '=' + encodeURIComponent(id);
-    }
-}
-</script>
+    <!-- MODAIS: CONFIRMAR REMOÇÃO (um por aba; o "Sim" envia o formulário dessa aba) -->
+    <?php foreach (['musico' => 'músico', 'compositor' => 'compositor', 'cantor' => 'cantor'] as $t => $nomeTipo): ?>
+    <input type="checkbox" id="m-rem-<?= $t ?>" class="modal-toggle">
+    <div class="modal-overlay"><div class="modal confirm">
+        <div class="modal-header"><h2>Confirmar remoção</h2><label for="m-rem-<?= $t ?>" class="modal-close">&times;</label></div>
+        <div class="modal-body">Tem certeza que deseja remover este <?= $nomeTipo ?>?</div>
+        <div class="modal-footer">
+            <label for="m-rem-<?= $t ?>" class="btn btn-secondary">Não</label>
+            <button class="btn btn-primary" type="submit" form="form-<?= $t ?>" name="acao" value="remover">Sim</button>
+        </div>
+    </div></div>
+    <?php endforeach; ?>
 
 </body>
 </html>
