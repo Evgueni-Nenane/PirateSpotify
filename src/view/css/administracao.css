@@ -27,12 +27,16 @@ header { display: flex; justify-content: space-between; align-items: center; bac
 .tabs { display: flex; gap: .5rem; background: #f0f0f0; padding: .3rem; border-radius: 10px; }
 .tab-label { padding: .5rem 1rem; font-size: .85rem; font-weight: 500; color: #6b6b6b; border-radius: 8px; cursor: pointer; transition: all .15s; user-select: none; }
 .tab-label:hover { color: #1e1e1e; }
-.panel { display: none; }
+
 /* Rádios irmãos de .card-header e .panel, por isso "~" funciona */
 #tab-cad:checked ~ .card-header [for="tab-cad"],
-#tab-lista:checked ~ .card-header [for="tab-lista"] { background: #fff; color: #1e1e1e; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+#tab-lista:checked ~ .card-header [for="tab-lista"],
+#tab-perfis:checked ~ .card-header [for="tab-perfis"] { background: #fff; color: #1e1e1e; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+
+.panel { display: none; }
 #tab-cad:checked ~ .panel-cad,
-#tab-lista:checked ~ .panel-lista { display: block; }
+#tab-lista:checked ~ .panel-lista,
+#tab-perfis:checked ~ .panel-perfis { display: block; }
 
 .search-input { padding: .5rem .8rem; border: 1px solid #e0e0e0; border-radius: 8px; font: inherit; font-size: .85rem; outline: none; width: 250px; }
 .search-input:focus, .label-group input:focus, .label-group select:focus { border-color: #1e1e1e; box-shadow: 0 0 0 3px rgba(30,30,30,.06); }
@@ -77,6 +81,12 @@ label.btn { cursor: pointer; }
 .foto-preview img { width: 100%; height: 100%; object-fit: cover; }
 .foto-actions { display: flex; flex-direction: column; gap: .5rem; width: 100%; }
 
+/* Perfis: grelha de permissões (checkboxes) */
+.perm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem 1rem; padding: .8rem 1rem; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 10px; }
+.label-group .perm-check { display: flex; flex-direction: row; align-items: center; gap: .5rem; font-size: .85rem; color: #2c2c2c; cursor: pointer; }
+.label-group .perm-check input { width: auto; padding: 0; accent-color: #1e1e1e; }
+.panel-perfis form + form { margin-top: 1.5rem; }
+
 /* Modais (checkbox imediatamente antes do overlay) */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; padding: 1.5rem; }
 .modal-toggle:checked + .modal-overlay { display: flex; }
@@ -100,4 +110,5 @@ label.btn { cursor: pointer; }
   .card-header { flex-direction: column; align-items: flex-start; }
   .form-grid, .cadastro-layout, .cadastro-layout.sm { grid-template-columns: 1fr; }
   .full { grid-column: span 1; }
+  .perm-grid { grid-template-columns: 1fr 1fr; }
 }

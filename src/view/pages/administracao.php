@@ -12,7 +12,7 @@ if (!$utilizador) {
   exit;
 }
 
-// Painel de utilizadores: só o Administrador entra aqui.
+// Painel de utilizadores: só quem tem a permissão "utilizadores" entra aqui.
 if (!Permissao::pode($utilizador, 'utilizadores')) {
   header('Location: listagemdiscos.php');
   exit;
@@ -34,6 +34,12 @@ function guardarFoto($campo)
   $nome = uniqid('u_') . '.' . $ext;
   move_uploaded_file($_FILES[$campo]['tmp_name'], $pasta . $nome);
   return $nome;
+}
+
+// Mostra "Sim" ou "Não" na tabela de perfis
+function sn($valor)
+{
+  return $valor ? 'Sim' : 'Não';
 }
 
 $msg = '';
@@ -114,6 +120,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $msg = 'Senha resetada.';
     }
   }
+
+  /* ----- Perfis ----- */
+  if ($_POST['acao'] === 'criar_perfil') {
+    $tab  = 'perfis';
+    $nome = trim($_POST['nome_perfil'] ?? '');
+    if ($nome === '') {
+      $msg = 'O nome do perfil é obrigatório.';
+    } elseif ($nivelDAO->criar($nome, $_POST['perm'] ?? [])) {
+      LogsController::registar('Criou o perfil: ' . $nome);
+      $msg = 'Perfil criado.';
+    } else {
+      $msg = 'Erro ao criar o perfil.';
+    }
+  }
+
+  if ($_POST['acao'] === 'atualizar_perfil') {
+    $tab  = 'perfis';
+    $id   = (int)($_POST['id_perfil'] ?? 0);
+    $nome = trim($_POST['nome_perfil'] ?? '');
+    if ($nome === '') {
+      $msg = 'O nome do perfil é obrigatório.';
+    } elseif ($nivelDAO->atualizar($id, $nome, $_POST['perm'] ?? [])) {
+      LogsController::registar('Actualizou o perfil: ' . $nome);
+      $msg = 'Perfil atualizado.';
+    } else {
+      $msg = 'Não foi possível atualizar (os perfis base não se editam).';
+    }
+  }
+
+  if ($_POST['acao'] === 'remover_perfil') {
+    $tab = 'perfis';
+    $id  = (int)($_POST['sel_perfil'] ?? 0);
+    if ($id === 0) {
+      $msg = 'Seleccione um perfil.';
+    } elseif ($nivelDAO->remover($id)) {
+      LogsController::registar('Removeu o perfil ID ' . $id);
+      $msg = 'Perfil removido.';
+    } else {
+      $msg = 'Não foi possível remover (perfil base ou com utilizadores associados).';
+    }
+  }
 }
 
 /* ---------- Botão Editar: abre o modal preenchido ---------- */
@@ -124,13 +171,27 @@ if (($_GET['acao'] ?? '') === 'editar') {
   if (!$ed) $msg = 'Seleccione um utilizador.';
 }
 
+/* ---------- Botão Editar Perfil: abre o modal preenchido ---------- */
+$edPerfil = null;
+if (($_GET['acao'] ?? '') === 'editar_perfil') {
+  $tab = 'perfis';
+  $edPerfil = $nivelDAO->buscarPorCodigo((int)($_GET['sel_perfil'] ?? 0));
+  if (!$edPerfil) {
+    $msg = 'Seleccione um perfil.';
+  } elseif ($edPerfil['CodigoNivel'] <= 4) {
+    $msg = 'Os perfis base não se editam.';
+    $edPerfil = null;
+  }
+}
+
 $lista  = $ctrl->listarUtilizador();
 $meuCodigo = 0;
 foreach ($lista as $u) {
   if ($u->getUser_name() === $utilizador->getUser_name()) $meuCodigo = $u->getCodigo();
 }
 $fotoLogado = $utilizador->getFoto();
-$niveis = $nivelDAO->listarNiveis();
+$niveis  = $nivelDAO->listarNiveis();
+$perfis  = $nivelDAO->listarPerfis();
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -189,11 +250,13 @@ $niveis = $nivelDAO->listarNiveis();
         <div class="card">
           <input type="radio" name="tabs" id="tab-cad" class="tab-toggle" <?= $tab === 'cad' ? 'checked' : '' ?>>
           <input type="radio" name="tabs" id="tab-lista" class="tab-toggle" <?= $tab === 'lista' ? 'checked' : '' ?>>
+          <input type="radio" name="tabs" id="tab-perfis" class="tab-toggle" <?= $tab === 'perfis' ? 'checked' : '' ?>>
 
           <div class="card-header">
             <div class="tabs">
               <label for="tab-cad" class="tab-label">Cadastrar Utilizador</label>
               <label for="tab-lista" class="tab-label">Informações de Utilizador</label>
+              <label for="tab-perfis" class="tab-label">Perfis</label>
             </div>
           </div>
 
@@ -226,7 +289,7 @@ $niveis = $nivelDAO->listarNiveis();
                     </select>
                   </div>
                   <div class="label-group">
-                    <label for="cad-perfil">Permissões de Utilizador</label>
+                    <label for="cad-perfil">Perfil do Utilizador</label>
                     <select id="cad-perfil" name="perfil">
                       <?php foreach ($niveis as $n): ?>
                         <option value="<?= $n->getCodigoNivel() ?>"><?= htmlspecialchars($n->getNome()) ?></option>
@@ -256,7 +319,7 @@ $niveis = $nivelDAO->listarNiveis();
                       <th>Nome Completo</th>
                       <th>E-mail Corporativo</th>
                       <th>Género</th>
-                      <th>Permissões</th>
+                      <th>Perfil</th>
                       <th>Telefone</th>
                     </tr>
                   </thead>
@@ -279,6 +342,70 @@ $niveis = $nivelDAO->listarNiveis();
                 <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover">Remover Seleccionado</button>
                 <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="resetar">Resetar Senha</button>
                 <button class="btn btn-primary btn-sm" type="submit" name="acao" value="editar" formmethod="get">Editar Utilizador</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- ===== PERFIS ===== -->
+          <section class="panel panel-perfis">
+            <!-- Criar perfil novo -->
+            <form method="post" action="administracao.php">
+              <input type="hidden" name="acao" value="criar_perfil">
+              <div class="form-grid">
+                <div class="label-group full">
+                  <label>Permissões</label>
+                  <div class="perm-grid">
+                    <label class="perm-check"><input type="checkbox" checked disabled> Listar</label>
+                    <label class="perm-check"><input type="checkbox" name="perm[adicionar]" value="1"> Criar</label>
+                    <label class="perm-check"><input type="checkbox" name="perm[editar]" value="1"> Editar</label>
+                    <label class="perm-check"><input type="checkbox" name="perm[remover]" value="1"> Remover</label>
+                    <label class="perm-check"><input type="checkbox" name="perm[utilizadores]" value="1"> Gerir utilizadores</label>
+                    <label class="perm-check"><input type="checkbox" name="perm[logs]" value="1"> Ver logs</label>
+                  </div>
+                </div>
+              </div>
+              <div class="table-actions">
+                <button class="btn btn-primary btn-sm" type="submit">Salvar Perfil</button>
+              </div>
+            </form>
+
+            <!-- Lista de perfis -->
+            <form method="post" action="administracao.php">
+              <div class="table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th class="col-sel"></th>
+                      <th>Código</th>
+                      <th>Perfil</th>
+                      <th>Criar</th>
+                      <th>Listar</th>
+                      <th>Editar</th>
+                      <th>Remover</th>
+                      <th>Gerir Utilizadores</th>
+                      <th>Logs</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($perfis as $p): ?>
+                      <tr>
+                        <td><input type="radio" name="sel_perfil" value="<?= $p['CodigoNivel'] ?>"></td>
+                        <td><?= $p['CodigoNivel'] ?></td>
+                        <td><?= htmlspecialchars($p['NomeNivel']) ?></td>
+                        <td><?= sn($p['PodeAdicionar']) ?></td>
+                        <td><?= sn($p['PodeLer']) ?></td>
+                        <td><?= sn($p['PodeEditar']) ?></td>
+                        <td><?= sn($p['PodeRemover']) ?></td>
+                        <td><?= sn($p['PodeUtilizadores']) ?></td>
+                        <td><?= sn($p['PodeLogs']) ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-actions">
+                <button class="btn btn-secondary btn-sm" type="submit" name="acao" value="remover_perfil">Remover Perfil</button>
+                <button class="btn btn-primary btn-sm" type="submit" name="acao" value="editar_perfil" formmethod="get">Editar Perfil</button>
               </div>
             </form>
           </section>
@@ -313,7 +440,7 @@ $niveis = $nivelDAO->listarNiveis();
               <div class="label-group"><label>Primeiro Nome</label><input type="text" value="<?= htmlspecialchars($ed ? $ed->getNome() : '') ?>" readonly></div>
               <div class="label-group"><label>Último Nome</label><input type="text" value="<?= htmlspecialchars($ed ? $ed->getApelido() : '') ?>" readonly></div>
               <div class="label-group full">
-                <label for="eu-perfil">Permissões</label>
+                <label for="eu-perfil">Perfil</label>
                 <select id="eu-perfil" name="perfil">
                   <?php foreach ($niveis as $n): ?>
                     <option value="<?= $n->getCodigoNivel() ?>" <?= ($ed && $ed->getPerfil()->getCodigoNivel() == $n->getCodigoNivel()) ? 'selected' : '' ?>><?= htmlspecialchars($n->getNome()) ?></option>
@@ -328,6 +455,39 @@ $niveis = $nivelDAO->listarNiveis();
         <div class="modal-footer">
           <label for="m-edit-user" class="btn btn-secondary">Cancelar</label>
           <button class="btn btn-primary" type="submit">Atualizar Utilizador</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: EDITAR PERFIL ============ -->
+  <input type="checkbox" id="m-edit-perfil" class="modal-toggle" <?= $edPerfil ? 'checked' : '' ?>>
+  <div class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Editar Perfil</h2><label for="m-edit-perfil" class="modal-close">&times;</label>
+      </div>
+      <form method="post" action="administracao.php">
+        <input type="hidden" name="acao" value="atualizar_perfil">
+        <input type="hidden" name="id_perfil" value="<?= $edPerfil ? $edPerfil['CodigoNivel'] : '' ?>">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="label-group full">
+              <label>Permissões</label>
+              <div class="perm-grid">
+                <label class="perm-check"><input type="checkbox" checked disabled> Listar</label>
+                <label class="perm-check"><input type="checkbox" name="perm[adicionar]" value="1" <?= ($edPerfil && $edPerfil['PodeAdicionar']) ? 'checked' : '' ?>> Criar</label>
+                <label class="perm-check"><input type="checkbox" name="perm[editar]" value="1" <?= ($edPerfil && $edPerfil['PodeEditar']) ? 'checked' : '' ?>> Editar</label>
+                <label class="perm-check"><input type="checkbox" name="perm[remover]" value="1" <?= ($edPerfil && $edPerfil['PodeRemover']) ? 'checked' : '' ?>> Remover</label>
+                <label class="perm-check"><input type="checkbox" name="perm[utilizadores]" value="1" <?= ($edPerfil && $edPerfil['PodeUtilizadores']) ? 'checked' : '' ?>> Gerir utilizadores</label>
+                <label class="perm-check"><input type="checkbox" name="perm[logs]" value="1" <?= ($edPerfil && $edPerfil['PodeLogs']) ? 'checked' : '' ?>> Ver logs</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <label for="m-edit-perfil" class="btn btn-secondary">Cancelar</label>
+          <button class="btn btn-primary" type="submit">Atualizar Perfil</button>
         </div>
       </form>
     </div>
