@@ -127,8 +127,7 @@ class NivelAcessoDAO
         $conn = connection::connectionDB();
 
         // Não apaga se houver utilizadores com este perfil.
-        // AJUSTA o nome da coluna se na tabela utilizador for diferente de CodigoNivel.
-        $ps = $conn->prepare("SELECT COUNT(*) AS total FROM utilizador WHERE CodigoNivel = ?");
+        $ps = $conn->prepare("SELECT COUNT(*) AS total FROM utilizador WHERE Perfil = ?");
         $ps->bind_param("i", $codigo);
         $ps->execute();
         $row = $ps->get_result()->fetch_assoc();
