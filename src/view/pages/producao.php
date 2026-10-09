@@ -146,6 +146,45 @@ if (($_GET['acao'] ?? '') === 'editar') {
 $produtores = $prodController->listarProdutor();
 $gravadoras = $gravController->listarGravadoras();
 $editoras   = $editController->listarEditoras();
+
+// Pesquisa simples (filtra em memória as 3 listas pelo texto introduzido)
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+    $qMin = mb_strtolower($q);
+
+    $produtores = array_values(array_filter($produtores, function ($p) use ($qMin) {
+        $alvo = mb_strtolower(
+            $p->getCodigoProdutor() . ' ' . $p->getNomeCompleto() . ' ' .
+            $p->getContactoProdutor() . ' ' . $p->getEmailProdutor()
+        );
+        return str_contains($alvo, $qMin);
+    }));
+
+    $gravadoras = array_values(array_filter($gravadoras, function ($g) use ($qMin) {
+        $alvo = mb_strtolower(
+            $g->getCodigoGravadora() . ' ' . $g->getNomeGravadora() . ' ' .
+            $g->getContactoGravadora() . ' ' . $g->getEmailGravadora() . ' ' .
+            $g->getEnderecoGravadora()
+        );
+        return str_contains($alvo, $qMin);
+    }));
+
+    $editoras = array_values(array_filter($editoras, function ($e) use ($qMin) {
+        $alvo = mb_strtolower(
+            $e->getCodigoEditora() . ' ' . $e->getNomeEditora() . ' ' .
+            $e->getContactoEditora() . ' ' . $e->getEmailEditora() . ' ' .
+            $e->getEndereco()
+        );
+        return str_contains($alvo, $qMin);
+    }));
+
+    // Abre automaticamente a primeira aba que tenha resultados
+    if (($_GET['acao'] ?? '') !== 'editar') {
+        if ($produtores)      $tab = 'prod';
+        elseif ($gravadoras)  $tab = 'grav';
+        elseif ($editoras)    $tab = 'edit';
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -197,7 +236,8 @@ $editoras   = $editController->listarEditoras();
 
     <main>
       <div class="card">
-        <!-- Rádios das abas: irmãos directos de .card-header e dos .panel -->
+        <form method="get" action="producao.php" id="form-pesq"></form>
+
         <input type="radio" name="tabs" id="tab-prod" class="tab-toggle" <?= $tab === 'prod' ? 'checked' : '' ?>>
         <input type="radio" name="tabs" id="tab-grav" class="tab-toggle" <?= $tab === 'grav' ? 'checked' : '' ?>>
         <input type="radio" name="tabs" id="tab-edit" class="tab-toggle" <?= $tab === 'edit' ? 'checked' : '' ?>>
@@ -208,7 +248,8 @@ $editoras   = $editController->listarEditoras();
             <label for="tab-grav" class="tab-label">Gravadoras</label>
             <label for="tab-edit" class="tab-label">Editoras</label>
           </div>
-          <input type="search" class="search-input" placeholder="Pesquisar...">
+          <input type="search" class="search-input" name="q" form="form-pesq"
+              value="<?= htmlspecialchars($q) ?>" placeholder="Pesquisar...">
         </div>
 
         <?php if ($msg): ?><div class="alert alert-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
@@ -229,7 +270,7 @@ $editoras   = $editController->listarEditoras();
                       <td><?= htmlspecialchars($p->getEmailProdutor()) ?></td>
                     </tr>
                   <?php endforeach; ?>
-                  <?php if (!$produtores): ?><tr><td colspan="4">Nenhum produtor cadastrado.</td></tr><?php endif; ?>
+                  <?php if (!$produtores): ?><tr><td colspan="4"><?= $q !== '' ? 'Nenhum produtor encontrado.' : 'Nenhum produtor cadastrado.' ?></td></tr><?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -258,7 +299,7 @@ $editoras   = $editController->listarEditoras();
                       <td><?= htmlspecialchars($g->getEnderecoGravadora()) ?></td>
                     </tr>
                   <?php endforeach; ?>
-                  <?php if (!$gravadoras): ?><tr><td colspan="5">Nenhuma gravadora cadastrada.</td></tr><?php endif; ?>
+                  <?php if (!$gravadoras): ?><tr><td colspan="5"><?= $q !== '' ? 'Nenhuma gravadora encontrada.' : 'Nenhuma gravadora cadastrada.' ?></td></tr><?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -287,7 +328,7 @@ $editoras   = $editController->listarEditoras();
                       <td><?= htmlspecialchars($e->getEndereco()) ?></td>
                     </tr>
                   <?php endforeach; ?>
-                  <?php if (!$editoras): ?><tr><td colspan="5">Nenhuma editora cadastrada.</td></tr><?php endif; ?>
+                  <?php if (!$editoras): ?><tr><td colspan="5"><?= $q !== '' ? 'Nenhuma editora encontrada.' : 'Nenhuma editora cadastrada.' ?></td></tr><?php endif; ?>
                 </tbody>
               </table>
             </div>

@@ -185,6 +185,47 @@ $cantores     = $cantorDAO->listarTodos();
 $compositores = $compositorDAO->listarTodos();
 $instrumentos = $instrDAO->listarTodos();
 
+/* ---------- Pesquisa simples (filtra em memória as 3 listas) ---------- */
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+    $qMin = mb_strtolower($q);
+
+    $musicos = array_values(array_filter($musicos, function ($m) use ($qMin, $musicoDAO) {
+        $nomesInstr = array_map(fn($i) => $i->getNome(), $musicoDAO->buscarInstrumentosDoMusico($m->getCodigoMusico()));
+        $alvo = mb_strtolower(
+            $m->getCodigoMusico() . ' ' . $m->getNomeMusico() . ' ' . $m->getApelidoMusico() . ' ' .
+            implode(' ', $nomesInstr) . ' ' . $m->getEmailMusico() . ' ' . $m->getContactoMusico()
+        );
+        return str_contains($alvo, $qMin);
+    }));
+
+    $compositores = array_values(array_filter($compositores, function ($c) use ($qMin) {
+        $alvo = mb_strtolower(
+            $c->getCodigoCompositor() . ' ' . $c->getNomeCompositor() . ' ' . $c->getApelidoCompositor() . ' ' .
+            $c->getEmailCompositor() . ' ' . $c->getContactoCompositor()
+        );
+        return str_contains($alvo, $qMin);
+    }));
+
+    $cantores = array_values(array_filter($cantores, function ($c) use ($qMin) {
+        $alvo = mb_strtolower(
+            $c->getCodigoCantor() . ' ' . $c->getNomeCantor() . ' ' . $c->getApelidoCantor() . ' ' .
+            $c->getEmailCantor() . ' ' . $c->getContactoCantor()
+        );
+        return str_contains($alvo, $qMin);
+    }));
+
+    // Se a aba actual ficou sem resultados, abre a primeira que tenha
+    if (($_GET['acao'] ?? '') !== 'editar') {
+        $listasPorAba = ['musicos' => $musicos, 'compositores' => $compositores, 'cantores' => $cantores];
+        if (empty($listasPorAba[$tab])) {
+            foreach ($listasPorAba as $nomeAba => $lista) {
+                if ($lista) { $tab = $nomeAba; break; }
+            }
+        }
+    }
+}
+
 /* ---------- Cabeçalho: foto e perfil do utilizador com sessão ---------- */
 $fotoLogado = $utilizador->getFoto();
 
@@ -271,12 +312,19 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
 
             <main>
                 <div class="card">
+                    
+                    <form method="get" action="artistas.php" id="form-pesq">
+                        <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
+                    </form>
+
                     <div class="card-header">
                         <div class="tabs">
                             <label for="tab-musicos" class="tab-label">Listar Músicos</label>
                             <label for="tab-compositores" class="tab-label">Listar Compositores</label>
                             <label for="tab-cantores" class="tab-label">Listar Cantores</label>
                         </div>
+                        <input type="search" class="search-input" name="q" form="form-pesq"
+                            value="<?= htmlspecialchars($q) ?>" placeholder="Pesquisar artista...">
                     </div>
 
                     <?php if ($msg): ?>
@@ -303,6 +351,9 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                                                 <td><?= htmlspecialchars($m->getContactoMusico()) ?></td>
                                             </tr>
                                         <?php endforeach; ?>
+                                        <?php if (!$musicos): ?>
+                                            <tr><td colspan="5"><?= $q !== '' ? 'Nenhum músico encontrado.' : 'Nenhum músico cadastrado.' ?></td></tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -328,6 +379,9 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                                                 <td><?= htmlspecialchars($c->getContactoCompositor()) ?></td>
                                             </tr>
                                         <?php endforeach; ?>
+                                        <?php if (!$compositores): ?>
+                                            <tr><td colspan="4"><?= $q !== '' ? 'Nenhum compositor encontrado.' : 'Nenhum compositor cadastrado.' ?></td></tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -353,6 +407,9 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
                                                 <td><?= htmlspecialchars($c->getContactoCantor()) ?></td>
                                             </tr>
                                         <?php endforeach; ?>
+                                        <?php if (!$cantores): ?>
+                                            <tr><td colspan="4"><?= $q !== '' ? 'Nenhum cantor encontrado.' : 'Nenhum cantor cadastrado.' ?></td></tr>
+                                        <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -484,7 +541,6 @@ $edTitulo = ['musico' => 'Músico', 'compositor' => 'Compositor', 'cantor' => 'C
         </div>
     </div>
 
-    <!-- MODAIS: CONFIRMAR REMOÇÃO (um por aba; o "Sim" envia o formulário dessa aba) -->
     <?php foreach (['musico' => 'músico', 'compositor' => 'compositor', 'cantor' => 'cantor'] as $t => $nomeTipo): ?>
     <input type="checkbox" id="m-rem-<?= $t ?>" class="modal-toggle">
     <div class="modal-overlay"><div class="modal confirm">

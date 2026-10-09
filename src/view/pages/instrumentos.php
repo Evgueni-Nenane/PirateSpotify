@@ -59,6 +59,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $instrumentos = $instrController->listarInstrumentos();
+
+// Pesquisa simples (filtra em memória pelo texto introduzido)
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+  $instrumentos = array_values(array_filter($instrumentos, function ($i) use ($q) {
+    $alvo = mb_strtolower($i->getCodigo() . ' ' . $i->getNome());
+    return str_contains($alvo, mb_strtolower($q));
+  }));
+}
 ?>
 
 
@@ -115,6 +124,9 @@ $instrumentos = $instrController->listarInstrumentos();
 
       <main>
         <div class="card">
+          <!-- Formulário GET da pesquisa (vazio; o input liga-se a ele via form="form-pesq") -->
+          <form method="get" action="instrumentos.php" id="form-pesq"></form>
+
           <!-- Rádios das abas: irmãos directos de .card-header e dos .panel -->
           <input type="radio" name="tabs" id="tab-lista" class="tab-toggle" checked>
           <input type="radio" name="tabs" id="tab-cad" class="tab-toggle">
@@ -124,7 +136,9 @@ $instrumentos = $instrController->listarInstrumentos();
               <label for="tab-lista" class="tab-label">Instrumentos Cadastrados</label>
               <label for="tab-cad" class="tab-label">Cadastrar Instrumento</label>
             </div>
-            <input type="search" class="search-input" placeholder="Pesquisar instrumento...">
+            <input type="search" class="search-input" name="q" form="form-pesq"
+              value="<?= htmlspecialchars($q) ?>" placeholder="Pesquisar instrumento...">
+            
           </div>
 
           <?php if ($msg): ?><div class="alert alert-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
@@ -152,7 +166,9 @@ $instrumentos = $instrController->listarInstrumentos();
                     <?php endforeach; ?>
                     <?php if (!$instrumentos): ?>
                       <tr>
-                        <td colspan="3">Nenhum instrumento cadastrado.</td>
+                        <td colspan="3">
+                          <?= $q !== '' ? 'Nenhum instrumento encontrado para "' . htmlspecialchars($q) . '".' : 'Nenhum instrumento cadastrado.' ?>
+                        </td>
                       </tr>
                     <?php endif; ?>
                   </tbody>
@@ -185,7 +201,6 @@ $instrumentos = $instrController->listarInstrumentos();
     </div>
   </div>
 
-  <!-- ============ MODAL: REMOVER INSTRUMENTO ============ -->
   <input type="checkbox" id="m-rem-instr" class="modal-toggle">
   <div class="modal-overlay">
     <div class="modal confirm">

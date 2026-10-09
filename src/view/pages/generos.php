@@ -51,6 +51,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $generos = $generoController->listarGeneros();
+
+// Pesquisa simples (filtra em memória pelo texto introduzido)
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+  $generos = array_values(array_filter($generos, function ($g) use ($q) {
+    $alvo = mb_strtolower($g->getCodigoGenero() . ' ' . $g->getNomeGenero());
+    return str_contains($alvo, mb_strtolower($q));
+  }));
+}
 ?>
 
 <!DOCTYPE html>
@@ -106,6 +115,9 @@ $generos = $generoController->listarGeneros();
 
       <main>
         <div class="card">
+          <!-- Formulário GET da pesquisa (vazio; o input liga-se a ele via form="form-pesq") -->
+          <form method="get" action="generos.php" id="form-pesq"></form>
+
           <!-- Rádios das abas: irmãos directos de .card-header e dos .panel -->
           <input type="radio" name="tabs" id="tab-lista" class="tab-toggle" checked>
           <input type="radio" name="tabs" id="tab-cad" class="tab-toggle">
@@ -115,7 +127,8 @@ $generos = $generoController->listarGeneros();
               <label for="tab-lista" class="tab-label">Géneros Cadastrados</label>
               <label for="tab-cad" class="tab-label">Cadastrar Género</label>
             </div>
-            <input type="search" class="search-input" placeholder="Pesquisar género...">
+            <input type="search" class="search-input" name="q" form="form-pesq"
+              value="<?= htmlspecialchars($q) ?>" placeholder="Pesquisar género...">
           </div>
 
           <?php if ($msg): ?><div class="alert alert-ok"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
@@ -143,7 +156,9 @@ $generos = $generoController->listarGeneros();
                     <?php endforeach; ?>
                     <?php if (!$generos): ?>
                       <tr>
-                        <td colspan="3">Nenhum género cadastrado.</td>
+                        <td colspan="3">
+                          <?= $q !== '' ? 'Nenhum género encontrado para "' . htmlspecialchars($q) . '".' : 'Nenhum género cadastrado.' ?>
+                        </td>
                       </tr>
                     <?php endif; ?>
                   </tbody>
@@ -176,7 +191,6 @@ $generos = $generoController->listarGeneros();
     </div>
   </div>
 
-  <!-- ============ MODAL: REMOVER GÉNERO ============ -->
   <input type="checkbox" id="m-rem-gen" class="modal-toggle">
   <div class="modal-overlay">
     <div class="modal confirm">
