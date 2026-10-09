@@ -353,6 +353,10 @@ $perfis  = $nivelDAO->listarPerfis();
               <input type="hidden" name="acao" value="criar_perfil">
               <div class="form-grid">
                 <div class="label-group full">
+                  <label for="perfil-nome">Nome do Novo Perfil *</label>
+                  <input type="text" id="perfil-nome" name="nome_perfil" required>
+                </div>
+                <div class="label-group full">
                   <label>Permissões</label>
                   <div class="perm-grid">
                     <label class="perm-check"><input type="checkbox" checked disabled> Listar</label>
@@ -378,8 +382,8 @@ $perfis  = $nivelDAO->listarPerfis();
                       <th class="col-sel"></th>
                       <th>Código</th>
                       <th>Perfil</th>
-                      <th>Criar</th>
                       <th>Listar</th>
+                      <th>Criar</th>
                       <th>Editar</th>
                       <th>Remover</th>
                       <th>Gerir Utilizadores</th>
@@ -392,8 +396,8 @@ $perfis  = $nivelDAO->listarPerfis();
                         <td><input type="radio" name="sel_perfil" value="<?= $p['CodigoNivel'] ?>"></td>
                         <td><?= $p['CodigoNivel'] ?></td>
                         <td><?= htmlspecialchars($p['NomeNivel']) ?></td>
-                        <td><?= sn($p['PodeAdicionar']) ?></td>
                         <td><?= sn($p['PodeLer']) ?></td>
+                        <td><?= sn($p['PodeAdicionar']) ?></td>
                         <td><?= sn($p['PodeEditar']) ?></td>
                         <td><?= sn($p['PodeRemover']) ?></td>
                         <td><?= sn($p['PodeUtilizadores']) ?></td>
@@ -472,6 +476,10 @@ $perfis  = $nivelDAO->listarPerfis();
         <input type="hidden" name="id_perfil" value="<?= $edPerfil ? $edPerfil['CodigoNivel'] : '' ?>">
         <div class="modal-body">
           <div class="form-grid">
+            <div class="label-group full">
+              <label for="ep-nome">Nome do Perfil *</label>
+              <input type="text" id="ep-nome" name="nome_perfil" required value="<?= htmlspecialchars($edPerfil ? $edPerfil['NomeNivel'] : '') ?>">
+            </div>
             <div class="label-group full">
               <label>Permissões</label>
               <div class="perm-grid">
