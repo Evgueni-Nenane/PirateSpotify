@@ -58,10 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
     $criado = $ctrl->cadastrarUtilizador($novo);
     if ($criado) {
-      LogsController::registar('Criou o utilizador: ' . trim($_POST['username']));
+      LogsController::registar('Criou o utilizador: ' . trim($_POST['nome']) . " " . trim($_POST['apelido']));
     }
     $msg = $criado
-      ? 'Utilizador criado. Senha inicial: '
+      ? 'Utilizador criado. '
       : 'Erro ao criar (o nome de utilizador já existe?).';
   }
 
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       guardarFoto('foto') ?? $atual->getFoto()
     );
     $ctrl->atualizarUser($id, $edit);
-    LogsController::registar('Actualizou o utilizador: ' . $atual->getUser_name());
+    LogsController::registar('Actualizou o utilizador: ' . $atual->getNomeCompleto());
     $msg = 'Utilizador atualizado.';
   }
 
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $msg = 'Não pode remover o seu próprio utilizador.';
     } else {
       $ctrl->suspenderUtilizador($id);
-      LogsController::registar('Removeu o utilizador: ' . ($alvo ? $alvo->getUser_name() : 'ID ' . $id));
+      LogsController::registar('Removeu o utilizador: ' . ($alvo ? $alvo->getNomeCompleto() : 'ID ' . $id)); //Econtrar um jeito melhor de colocar este log
       $msg = 'Utilizador removido.';
     }
   }
@@ -110,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $alvo = $ctrl->listarPorId($id);
       $nova = "Maguinhas123"; //VOU TROCAR
       $ctrl->resetarSenha($id, $nova);
-      LogsController::registar('Resetou a senha do utilizador: ' . ($alvo ? $alvo->getUser_name() : 'ID ' . $id));
-      $msg = 'Senha resetada. Nova senha: ' . $nova;
+      LogsController::registar('Resetou a senha do utilizador: ' . ($alvo ? $alvo->getNomeCompleto() : 'ID ' . $id)); //Econtrar um jeito melhor de colocar este log
+      $msg = 'Senha resetada.';
     }
   }
 }

@@ -178,28 +178,37 @@ class UtilizadorDAO
         return null;
     }
 
-    public function remover($codigoUser)
-    {
-        $conn = connection::connectionDB();
-        $sql = "DELETE FROM Utilizador WHERE Codigo_User = ?";
-        $ps = $conn->prepare($sql);
-        $ps->bind_param("i", $codigoUser);
-        $ps->execute();
-        $utilizador = $this->buscarPorId($codigoUser);
-        Sessao::getUtilizadorLogado();
+   public function remover($codigoUser)
+{
+    $conn = Connection::connectionDB();
 
-        $horaAgora = date('Y-m-d H:i:s');
-
-        self::$log = new Logs(
-            nome: Sessao::getUtilizadorLogado()->getNome(),
-            apelido: Sessao::getUtilizadorLogado()->getApelido(),
-            perfil: Sessao::getUtilizadorLogado()->getPerfil()->getNome(),
-            email: Sessao::getUtilizadorLogado()->getEmail(),
-            accao: "Removeu um utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
-            dataHora: $horaAgora
-        );
-        return true;
+    // 1. Buscar ANTES de apagar
+    $utilizador = $this->buscarPorId($codigoUser);
+    if ($utilizador === null) {
+        return false;   // não existe, nada a remover
     }
+
+    // 2. Apagar
+    $sql = "DELETE FROM Utilizador WHERE Codigo_User = ?";
+    $ps = $conn->prepare($sql);
+    $ps->bind_param("i", $codigoUser);
+    $ps->execute();
+
+    // 3. Registar o log
+    $horaAgora = date('Y-m-d H:i:s');
+    $logado = Sessao::getUtilizadorLogado();
+
+    self::$log = new Logs(
+        nome: $logado->getNome(),
+        apelido: $logado->getApelido(),
+        perfil: $logado->getPerfil()->getNome(),
+        email: $logado->getEmail(),
+        accao: "Removeu um utilizador: " . $utilizador->getNome() . " " . $utilizador->getApelido(),
+        dataHora: $horaAgora
+    );
+
+    return true;
+}
 
 
     public function resetarSenha($codigoUser, $novaSenha)

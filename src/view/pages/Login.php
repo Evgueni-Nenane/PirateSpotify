@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <button type="submit">Login</button>
                     </div>
                     <hr>
-                    <div class="center"><a href="#">Pedir reset de senha</a></div>
+                   <!-- <div class="center"><a href="#">Pedir reset de senha</a></div>-->
                 </div>
             </form>
         </div>

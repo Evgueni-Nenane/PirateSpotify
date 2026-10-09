@@ -650,3 +650,9 @@
             .form-grid-full { grid-column: span 1; }
             .instrumento-group { grid-column: span 1; }
         }
+/* Modais de confirmar remoção (um por aba) */
+#m-rem-musico:checked + .modal-overlay,
+#m-rem-compositor:checked + .modal-overlay,
+#m-rem-cantor:checked + .modal-overlay {
+    display: flex;
+}
