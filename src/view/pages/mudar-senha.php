@@ -26,19 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erro = 'A nova senha e a confirmação não coincidem.';
     } elseif (strlen($novaSenha) < 6) {
         $erro = 'A nova senha deve ter pelo menos 6 caracteres.';
+    } elseif ($novaSenha === $senhaAtual) {
+        $erro = 'A nova senha não pode ser igual à senha atual.';
     } else {
-        if ($novaSenha === $senhaAtual) {
-            $erro = 'A nova senha não pode ser igual à senha atual.';
-        } else {
-            $loginController = new LoginController();
-            $sucesso = $loginController->atualizarSenha($username, $senhaAtual, $novaSenha);
+        $loginController = new LoginController();
+        $sucesso = $loginController->atualizarSenha($username, $senhaAtual, $novaSenha);
 
-            if ($sucesso) {
-                header('Location: administracao.php');
-                exit;
-            } else {
-                $erro = 'Não foi possível atualizar a senha. Confirma a senha atual.';
-            }
+        if ($sucesso) {
+            header('Location: administracao.php');
+            exit;
+        } else {
+            $erro = 'Não foi possível atualizar a senha. Confirma a senha atual.';
         }
     }
 }
@@ -71,23 +69,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form method="post">
                 <div class="campo">
                     <label for="senha_atual">Senha atual</label>
-                    <input type="password" id="senha_atual" name="senha_atual" placeholder="Senha atual">
+                    <input type="text" id="senha_atual" name="senha_atual" class="pw" placeholder="Senha atual" autocomplete="off">
                 </div>
 
                 <div class="campo">
                     <label for="nova_senha">Nova senha</label>
-                    <input type="password" id="nova_senha" name="nova_senha" placeholder="Nova senha">
+                    <input type="text" id="nova_senha" name="nova_senha" class="pw" placeholder="Nova senha" autocomplete="off">
                 </div>
 
                 <div class="campo">
                     <label for="confirmar_senha">Confirmar nova senha</label>
-                    <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="Repete a nova senha">
+                    <input type="text" id="confirmar_senha" name="confirmar_senha" class="pw" placeholder="Repete a nova senha" autocomplete="off">
                 </div>
 
                 <div class="campo">
-                    <label>
-                        <input type="checkbox" onclick="mostrarSenhas(this.checked)">
-                        Mostrar senhas
+                    <label class="mostrar">
+                        <input type="checkbox" id="mostrar"> Mostrar senhas
                     </label>
                 </div>
 
@@ -97,15 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
         </div>
     </div>
-
-    <script>
-        function mostrarSenhas(mostrar) {
-            const tipo = mostrar ? 'text' : 'password';
-            document.getElementById('senha_atual').type = tipo;
-            document.getElementById('nova_senha').type = tipo;
-            document.getElementById('confirmar_senha').type = tipo;
-        }
-    </script>
 </body>
 
 </html>
