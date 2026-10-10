@@ -45,6 +45,11 @@ function sn($valor)
 $msg = '';
 $tab = 'cad';
 
+// Aba pedida na URL (a pesquisa envia a aba actual)
+if (in_array($_GET['tab'] ?? '', ['cad', 'lista', 'perfis'], true)) {
+  $tab = $_GET['tab'];
+}
+
 /* ---------- Cadastrar / Atualizar / Remover ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -192,6 +197,40 @@ foreach ($lista as $u) {
 $fotoLogado = $utilizador->getFoto();
 $niveis  = $nivelDAO->listarNiveis();
 $perfis  = $nivelDAO->listarPerfis();
+
+/* ---------- Pesquisa simples (filtra em memória as duas listas) ---------- */
+$q = trim($_GET['q'] ?? '');
+if ($q !== '') {
+  $qMin = mb_strtolower($q);
+
+  $lista = array_values(array_filter($lista, function ($u) use ($qMin) {
+    $alvo = mb_strtolower(
+      $u->getCodigo() . ' ' . $u->getNomeCompleto() . ' ' . $u->getUser_name() . ' ' .
+      $u->getEmail() . ' ' . $u->getGenero() . ' ' . $u->getPerfil()->getNome() . ' ' .
+      $u->getContacto()
+    );
+    return str_contains($alvo, $qMin);
+  }));
+
+  $perfis = array_values(array_filter($perfis, function ($p) use ($qMin) {
+    // Inclui o nome das permissões que o perfil tem (ex.: "logs", "editar")
+    $perms = '';
+    if ($p['PodeLer'])          $perms .= ' listar';
+    if ($p['PodeAdicionar'])    $perms .= ' criar adicionar';
+    if ($p['PodeEditar'])       $perms .= ' editar';
+    if ($p['PodeRemover'])      $perms .= ' remover';
+    if ($p['PodeUtilizadores']) $perms .= ' utilizadores gerir';
+    if ($p['PodeLogs'])         $perms .= ' logs';
+    $alvo = mb_strtolower($p['CodigoNivel'] . ' ' . $p['NomeNivel'] . $perms);
+    return str_contains($alvo, $qMin);
+  }));
+
+  // Se a aba actual ficou sem resultados e a outra tem, muda para a outra
+  if (!$ed && !$edPerfil) {
+    if (($tab === 'lista' || $tab === 'cad') && !$lista && $perfis) $tab = 'perfis';
+    elseif (($tab === 'perfis' || $tab === 'cad') && !$perfis && $lista) $tab = 'lista';
+  }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt">
@@ -248,6 +287,12 @@ $perfis  = $nivelDAO->listarPerfis();
 
       <main>
         <div class="card">
+          <!-- Formulário GET da pesquisa (o input liga-se a ele via form="form-pesq").
+               O campo escondido mantém a aba actual. -->
+          <form method="get" action="administracao.php" id="form-pesq">
+            <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
+          </form>
+
           <input type="radio" name="tabs" id="tab-cad" class="tab-toggle" <?= $tab === 'cad' ? 'checked' : '' ?>>
           <input type="radio" name="tabs" id="tab-lista" class="tab-toggle" <?= $tab === 'lista' ? 'checked' : '' ?>>
           <input type="radio" name="tabs" id="tab-perfis" class="tab-toggle" <?= $tab === 'perfis' ? 'checked' : '' ?>>
@@ -258,6 +303,8 @@ $perfis  = $nivelDAO->listarPerfis();
               <label for="tab-lista" class="tab-label">Informações de Utilizador</label>
               <label for="tab-perfis" class="tab-label">Perfis</label>
             </div>
+            <input type="search" class="search-input" name="q" form="form-pesq"
+              value="<?= htmlspecialchars($q) ?>" placeholder="Pesquisar utilizador ou perfil...">
           </div>
 
           <?php if ($msg): ?>
@@ -335,6 +382,11 @@ $perfis  = $nivelDAO->listarPerfis();
                         <td><?= htmlspecialchars($u->getContacto()) ?></td>
                       </tr>
                     <?php endforeach; ?>
+                    <?php if (!$lista): ?>
+                      <tr>
+                        <td colspan="7"><?= $q !== '' ? 'Nenhum utilizador encontrado.' : 'Nenhum utilizador cadastrado.' ?></td>
+                      </tr>
+                    <?php endif; ?>
                   </tbody>
                 </table>
               </div>
@@ -404,6 +456,11 @@ $perfis  = $nivelDAO->listarPerfis();
                         <td><?= sn($p['PodeLogs']) ?></td>
                       </tr>
                     <?php endforeach; ?>
+                    <?php if (!$perfis): ?>
+                      <tr>
+                        <td colspan="9"><?= $q !== '' ? 'Nenhum perfil encontrado.' : 'Nenhum perfil cadastrado.' ?></td>
+                      </tr>
+                    <?php endif; ?>
                   </tbody>
                 </table>
               </div>
